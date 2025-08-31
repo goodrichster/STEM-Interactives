@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-# Graham's Mathematical Applications Suite
+# STEM Interactive Applications Suite
 
-https://goodrichster.github.io/graham-projects/index.html
-
-A collection of interactive mathematical applications built with modern web technologies. This educational suite provides comprehensive tools for exploring arithmetic, geometry, trigonometry, and 3D mathematics.
+A collection of interactive mathematical and STEM-related applications built with modern web technologies. This educational suite provides comprehensive tools for exploring arithmetic, geometry, trigonometry, and 3D mathematics as well as Physics and Programming Concepts (TBD)
 
 ## 🚀 Live Applications
 
