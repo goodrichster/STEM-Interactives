@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Graham's Mathematical Applications Suite
 
 https://goodrichster.github.io/graham-projects/index.html
@@ -235,3 +236,7 @@ Contributions are welcome! Please feel free to submit issues, feature requests, 
 ---
 
 *Built with modern web technologies for educational excellence* 🎓✨
+=======
+# STEM-Interactives
+STEM-based content for illustrating topics in Mathematics, Science, and Programming.
+>>>>>>> origin/main
