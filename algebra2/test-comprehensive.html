@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algebra 2 - Comprehensive Test Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .test-button.running {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .test-button.passed {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .test-button.failed {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .console-output {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            height: 600px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .test-results {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .test-results.show {
+            display: block;
+        }
+        
+        .hidden-content {
+            /* Keep original content hidden during testing */
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Algebra 2</a>
+            <h1>🧪 Comprehensive Test Suite</h1>
+            <p class="subtitle">Interactive Testing for Modular Algebra 2 System</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="test-summary">
+            <div class="summary-card">
+                <div class="summary-number" id="totalTests">0</div>
+                <div class="summary-label">Total Tests</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-number" id="passedTests">0</div>
+                <div class="summary-label">Passed</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-number" id="failedTests">0</div>
+                <div class="summary-label">Failed</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-number" id="successRate">0%</div>
+                <div class="summary-label">Success Rate</div>
+            </div>
+        </div>
+        
+        <div class="test-controls">
+            <button class="test-button" onclick="runModularSystemTest()" id="modularTestBtn">
+                <span class="status-indicator" id="modularStatus"></span>
+                🔧 Modular System Test
+            </button>
+            <button class="test-button" onclick="runInteractiveTest()" id="interactiveTestBtn">
+                <span class="status-indicator" id="interactiveStatus"></span>
+                🎮 Interactive Functionality Test
+            </button>
+            <button class="test-button" onclick="runVisualTest()" id="visualTestBtn">
+                <span class="status-indicator" id="visualStatus"></span>
+                🎨 Visual Regression Test
+            </button>
+            <button class="test-button" onclick="runAllTests()" id="allTestsBtn">
+                <span class="status-indicator" id="allStatus"></span>
+                🚀 Run All Tests
+            </button>
+            <button class="test-button" onclick="clearConsole()" id="clearBtn">
+                🗑️ Clear Console
+            </button>
+            <button class="test-button" onclick="downloadResults()" id="downloadBtn">
+                💾 Download Results
+            </button>
+        </div>
+        
+        <div class="console-output" id="consoleOutput">
+            <div style="color: #4CAF50;">🧪 Algebra 2 Comprehensive Test Suite Ready</div>
+            <div style="color: #ffcc02;">📋 Click any test button to begin testing</div>
+            <div style="color: #667eea;">📊 Results will appear here in real-time</div>
+        </div>
+        
+        <div class="test-results" id="testResults">
+            <h3>📊 Detailed Test Results</h3>
+            <div id="detailedResults"></div>
+        </div>
+        
+        <!-- Hidden content structure for testing -->
+        <div class="hidden-content">
+            <!-- Unit navigation structure -->
+            <div class="unit-navigation">
+                <div class="unit-card active" data-unit="unit1">
+                    <div class="unit-title">Unit 1: Functions and Equations</div>
+                </div>
+                <div class="unit-card" data-unit="unit2">
+                    <div class="unit-title">Unit 2: Polynomials</div>
+                </div>
+            </div>
+            
+            <!-- Unit 1 content structure -->
+            <div id="unit1" class="unit-content active">
+                <div class="topic-tabs">
+                    <button class="topic-button active" data-topic="domain-range">Domain & Range</button>
+                    <button class="topic-button" data-topic="function-characteristics">Characteristics</button>
+                    <button class="topic-button" data-topic="transformations">Transformations</button>
+                    <button class="topic-button" data-topic="complex-numbers">Complex Numbers</button>
+                </div>
+                
+                <!-- Mock canvas and controls -->
+                <canvas id="domainRangeCanvas" class="algebra-canvas" width="600" height="400"></canvas>
+                <canvas id="characteristicsCanvas" class="algebra-canvas" width="600" height="400"></canvas>
+                <canvas id="transformationsCanvas" class="algebra-canvas" width="600" height="400"></canvas>
+                <canvas id="complexCanvas" class="algebra-canvas" width="600" height="400"></canvas>
+                
+                <!-- Mock inputs -->
+                <select id="domainFunction" class="control-input">
+                    <option value="linear">Linear</option>
+                    <option value="quadratic">Quadratic</option>
+                    <option value="exponential">Exponential</option>
+                </select>
+                
+                <select id="characteristicsFunction" class="control-input">
+                    <option value="quadratic">Quadratic</option>
+                    <option value="cubic">Cubic</option>
+                </select>
+                
+                <input type="range" id="transformA" class="control-input" min="0.1" max="3" step="0.1" value="1">
+                <input type="range" id="transformH" class="control-input" min="-5" max="5" step="0.1" value="0">
+                <input type="range" id="transformK" class="control-input" min="-5" max="5" step="0.1" value="0">
+                
+                <span id="transformAValue">1</span>
+                <span id="transformHValue">0</span>
+                <span id="transformKValue">0</span>
+                
+                <input type="number" id="complexReal1" value="0">
+                <input type="number" id="complexImag1" value="0">
+                <input type="number" id="complexReal2" value="0">
+                <input type="number" id="complexImag2" value="0">
+                
+                <input type="number" id="quadraticA" value="1">
+                <input type="number" id="quadraticB" value="0">
+                <input type="number" id="quadraticC" value="0">
+                
+                <!-- Mock result divs -->
+                <div id="domainRangeResults"></div>
+                <div id="characteristicsResults"></div>
+                <div id="transformationResults"></div>
+                <div id="complexResults"></div>
+                <div id="quadraticInfo"></div>
+            </div>
+            
+            <!-- Unit 2 content structure -->
+            <div id="unit2" class="unit-content"></div>
+        </div>
+    </div>
+    
+    <!-- Load Core Modules First -->
+    <script src="core/algebra2-core.js"></script>
+    <script src="core/algebra2-ui.js"></script>
+    <script src="core/algebra2-loader.js"></script>
+    
+    <!-- Load Test Suites -->
+    <script src="test-modular-system.js"></script>
+    <script src="test-interactive-functionality.js"></script>
+    <script src="test-visual-regression.js"></script>
+    
+    <!-- Test Runner Script -->
+    <script>
+        // Test Runner Implementation
+        let testResults = {
+            modular: null,
+            interactive: null,
+            visual: null,
+            overall: { passed: 0, failed: 0, total: 0 }
+        };
+        
+        let consoleBuffer = [];
+        
+        // Override console.log to capture output
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            const message = args.join(' ');
+            consoleBuffer.push(message);
+            updateConsoleDisplay();
+            originalConsoleLog.apply(console, args);
+        };
+        
+        function updateConsoleDisplay() {
+            const consoleOutput = document.getElementById('consoleOutput');
+            consoleOutput.innerHTML = consoleBuffer.slice(-200).map(msg => {
+                // Style different types of messages
+                if (msg.includes('✅')) {
+                    return `<div style="color: #4CAF50;">${msg}</div>`;
+                } else if (msg.includes('❌')) {
+                    return `<div style="color: #f44336;">${msg}</div>`;
+                } else if (msg.includes('⚠️')) {
+                    return `<div style="color: #ff9800;">${msg}</div>`;
+                } else if (msg.includes('🏆')) {
+                    return `<div style="color: #4CAF50; font-weight: bold;">${msg}</div>`;
+                } else if (msg.includes('📊') || msg.includes('===')) {
+                    return `<div style="color: #2196F3; font-weight: bold;">${msg}</div>`;
+                } else {
+                    return `<div style="color: #ffffff;">${msg}</div>`;
+                }
+            }).join('');
+            
+            // Auto-scroll to bottom
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        function updateProgress() {
+            const { passed, failed, total } = testResults.overall;
+            const progressFill = document.getElementById('progressFill');
+            const progress = total > 0 ? ((passed + failed) / total) * 100 : 0;
+            
+            progressFill.style.width = `${progress}%`;
+            
+            document.getElementById('totalTests').textContent = total;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+            
+            const successRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+            document.getElementById('successRate').textContent = `${successRate}%`;
+        }
+        
+        function setButtonStatus(buttonId, status) {
+            const button = document.getElementById(buttonId);
+            const statusIndicator = document.querySelector(`#${buttonId} .status-indicator`);
+            
+            button.className = `test-button ${status}`;
+            
+            switch(status) {
+                case 'running':
+                    button.disabled = true;
+                    statusIndicator.style.background = '#ff9800';
+                    break;
+                case 'passed':
+                    button.disabled = false;
+                    statusIndicator.style.background = '#4CAF50';
+                    break;
+                case 'failed':
+                    button.disabled = false;
+                    statusIndicator.style.background = '#f44336';
+                    break;
+                default:
+                    button.disabled = false;
+                    statusIndicator.style.background = 'rgba(255,255,255,0.3)';
+            }
+        }
+        
+        async function runModularSystemTest() {
+            console.log('🚀 Starting Modular System Test...');
+            setButtonStatus('modularTestBtn', 'running');
+            
+            try {
+                const modularTest = new ModularSystemTest();
+                await modularTest.runAllTests();
+                
+                testResults.modular = {
+                    passed: modularTest.passCount,
+                    failed: modularTest.failCount
+                };
+                
+                updateOverallResults();
+                setButtonStatus('modularTestBtn', modularTest.failCount === 0 ? 'passed' : 'failed');
+                
+            } catch (error) {
+                console.log(`❌ Modular System Test failed: ${error.message}`);
+                setButtonStatus('modularTestBtn', 'failed');
+            }
+        }
+        
+        async function runInteractiveTest() {
+            console.log('🚀 Starting Interactive Functionality Test...');
+            setButtonStatus('interactiveTestBtn', 'running');
+            
+            try {
+                const interactiveTest = new InteractiveFunctionalityTest();
+                await interactiveTest.runAllTests();
+                
+                testResults.interactive = {
+                    passed: interactiveTest.passCount,
+                    failed: interactiveTest.failCount
+                };
+                
+                updateOverallResults();
+                setButtonStatus('interactiveTestBtn', interactiveTest.failCount === 0 ? 'passed' : 'failed');
+                
+            } catch (error) {
+                console.log(`❌ Interactive Functionality Test failed: ${error.message}`);
+                setButtonStatus('interactiveTestBtn', 'failed');
+            }
+        }
+        
+        async function runVisualTest() {
+            console.log('🚀 Starting Visual Regression Test...');
+            setButtonStatus('visualTestBtn', 'running');
+            
+            try {
+                const visualTest = new VisualRegressionTest();
+                await visualTest.runAllTests();
+                
+                testResults.visual = {
+                    passed: visualTest.passCount,
+                    failed: visualTest.failCount
+                };
+                
+                updateOverallResults();
+                setButtonStatus('visualTestBtn', visualTest.failCount === 0 ? 'passed' : 'failed');
+                
+            } catch (error) {
+                console.log(`❌ Visual Regression Test failed: ${error.message}`);
+                setButtonStatus('visualTestBtn', 'failed');
+            }
+        }
+        
+        async function runAllTests() {
+            console.log('🚀 Starting Comprehensive Test Suite...');
+            setButtonStatus('allTestsBtn', 'running');
+            
+            const startTime = performance.now();
+            
+            try {
+                await runModularSystemTest();
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Brief pause
+                
+                await runInteractiveTest();
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Brief pause
+                
+                await runVisualTest();
+                
+                const endTime = performance.now();
+                const totalTime = (endTime - startTime) / 1000;
+                
+                console.log(`\n🏁 ALL TESTS COMPLETED in ${totalTime.toFixed(2)} seconds`);
+                
+                const overallPassed = testResults.overall.failed === 0;
+                setButtonStatus('allTestsBtn', overallPassed ? 'passed' : 'failed');
+                
+                // Show detailed results
+                showDetailedResults();
+                
+            } catch (error) {
+                console.log(`❌ Test Suite failed: ${error.message}`);
+                setButtonStatus('allTestsBtn', 'failed');
+            }
+        }
+        
+        function updateOverallResults() {
+            let totalPassed = 0;
+            let totalFailed = 0;
+            
+            Object.values(testResults).forEach(result => {
+                if (result && typeof result === 'object' && 'passed' in result) {
+                    totalPassed += result.passed;
+                    totalFailed += result.failed;
+                }
+            });
+            
+            testResults.overall = {
+                passed: totalPassed,
+                failed: totalFailed,
+                total: totalPassed + totalFailed
+            };
+            
+            updateProgress();
+        }
+        
+        function showDetailedResults() {
+            const detailedResults = document.getElementById('detailedResults');
+            const testResultsSection = document.getElementById('testResults');
+            
+            let html = '<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">';
+            html += '<tr style="background: #f0f0f0;"><th style="padding: 10px; border: 1px solid #ddd;">Test Suite</th><th style="padding: 10px; border: 1px solid #ddd;">Passed</th><th style="padding: 10px; border: 1px solid #ddd;">Failed</th><th style="padding: 10px; border: 1px solid #ddd;">Status</th></tr>';
+            
+            const suites = [
+                { name: 'Modular System', key: 'modular' },
+                { name: 'Interactive Functionality', key: 'interactive' },
+                { name: 'Visual Regression', key: 'visual' }
+            ];
+            
+            suites.forEach(suite => {
+                const result = testResults[suite.key];
+                if (result) {
+                    const status = result.failed === 0 ? '✅ PASSED' : '❌ FAILED';
+                    const statusColor = result.failed === 0 ? '#4CAF50' : '#f44336';
+                    
+                    html += `<tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${suite.name}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${result.passed}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${result.failed}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; color: ${statusColor}; font-weight: bold;">${status}</td>
+                    </tr>`;
+                }
+            });
+            
+            html += '</table>';
+            
+            detailedResults.innerHTML = html;
+            testResultsSection.classList.add('show');
+        }
+        
+        function clearConsole() {
+            consoleBuffer = [];
+            updateConsoleDisplay();
+            console.log('🗑️ Console cleared');
+        }
+        
+        function downloadResults() {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const results = {
+                timestamp: new Date().toISOString(),
+                testResults: testResults,
+                consoleOutput: consoleBuffer.join('\n'),
+                userAgent: navigator.userAgent,
+                url: window.location.href
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `algebra2-test-results-${timestamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            console.log('💾 Test results downloaded');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 Test Suite Initialized');
+            console.log('📋 Ready to run comprehensive tests');
+            
+            // Initialize UI
+            if (typeof initializeUI === 'function') {
+                initializeUI();
+            }
+            
+            // Initialize canvases
+            if (typeof initializeCanvases === 'function') {
+                initializeCanvases();
+            }
+        });
+    </script>
+</body>
+</html>

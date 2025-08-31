@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Function Test - Units 4-9</title>
+</head>
+<body>
+    <div id="test-results"></div>
+    
+    <script src="algebra2.js"></script>
+    <script>
+        // Test if the previously problematic functions are now accessible
+        console.log('🧪 Testing Units 4-9 function accessibility...');
+        
+        const testFunctions = {
+            'Unit 4': ['updateExponential', 'updateLogarithmic', 'updateExpEq', 'updateLogEq', 'updateApplications'],
+            'Unit 5': ['updateRationalFunc'],
+            'Unit 6': ['updateArithmetic', 'calculateArithmetic'],
+            'Unit 7': ['updateUnitCircle'],
+            'Unit 8': ['updateProbability', 'calculateBasicProbability'],
+            'Unit 9': ['updateDistribution', 'calculateStatistics']
+        };
+        
+        let results = '<h3>Units 4-9 Function Accessibility Test:</h3>';
+        let allPassed = true;
+        let totalTested = 0;
+        let totalPassed = 0;
+        
+        Object.keys(testFunctions).forEach(unit => {
+            results += `<h4>${unit}:</h4>`;
+            
+            testFunctions[unit].forEach(funcName => {
+                totalTested++;
+                const isAccessible = typeof window[funcName] === 'function';
+                const status = isAccessible ? '✅' : '❌';
+                const message = isAccessible ? 'ACCESSIBLE' : 'NOT ACCESSIBLE';
+                
+                results += `<div style="margin-left: 20px;">${status} ${funcName}: ${message}</div>`;
+                console.log(`${status} ${funcName}: ${message}`);
+                
+                if (isAccessible) {
+                    totalPassed++;
+                } else {
+                    allPassed = false;
+                }
+            });
+        });
+        
+        // Overall result
+        const successRate = totalTested > 0 ? (totalPassed / totalTested * 100).toFixed(1) : 0;
+        const overallStatus = allPassed ? '✅ SUCCESS' : '❌ PARTIAL FAILURE';
+        const overallMessage = `${totalPassed}/${totalTested} functions accessible (${successRate}%)`;
+        
+        results += `<h4>${overallStatus}: ${overallMessage}</h4>`;
+        console.log(`${overallStatus}: ${overallMessage}`);
+        
+        document.getElementById('test-results').innerHTML = results;
+        
+        // Test specific unit switching
+        if (typeof switchUnit === 'function') {
+            results += '<h4>Unit Switching Tests:</h4>';
+            
+            const units = ['unit4', 'unit5', 'unit6', 'unit7', 'unit8', 'unit9'];
+            units.forEach(unitId => {
+                try {
+                    switchUnit(unitId);
+                    console.log(`✅ switchUnit('${unitId}') executed without error`);
+                    results += `<div>✅ ${unitId}: PASSED</div>`;
+                } catch (e) {
+                    console.log(`❌ switchUnit('${unitId}') error:`, e.message);
+                    results += `<div>❌ ${unitId}: FAILED - ${e.message}</div>`;
+                }
+            });
+            
+            document.getElementById('test-results').innerHTML = results;
+        }
+    </script>
+</body>
+</html>

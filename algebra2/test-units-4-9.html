@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Units 4-9 Function Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .test-button { background: #4CAF50; color: white; padding: 10px 20px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Units 4-9 Function Accessibility Test</h1>
+    
+    <div class="test-section">
+        <h2>Function Accessibility Check</h2>
+        <div id="function-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Unit Switching Test</h2>
+        <button class="test-button" onclick="testUnit(4)">Test Unit 4</button>
+        <button class="test-button" onclick="testUnit(5)">Test Unit 5</button>
+        <button class="test-button" onclick="testUnit(6)">Test Unit 6</button>
+        <button class="test-button" onclick="testUnit(7)">Test Unit 7</button>
+        <button class="test-button" onclick="testUnit(8)">Test Unit 8</button>
+        <button class="test-button" onclick="testUnit(9)">Test Unit 9</button>
+        <div id="unit-results"></div>
+    </div>
+    
+    <script src="algebra2.js"></script>
+    <script>
+        // Test functions for Units 4-9
+        const unitFunctions = {
+            'Unit 4 - Exponentials & Logarithms': [
+                'updateExponential', 'updateLogarithmic', 'updateExpEq', 
+                'updateLogEq', 'updateApplications', 'solveApplication'
+            ],
+            'Unit 5 - Rational Functions': [
+                'updateRationalFunc'
+            ],
+            'Unit 6 - Sequences and Series': [
+                'updateArithmetic', 'calculateArithmetic'
+            ],
+            'Unit 7 - Trigonometry Review': [
+                'updateUnitCircle'
+            ],
+            'Unit 8 - Probability': [
+                'updateProbability', 'calculateBasicProbability'
+            ],
+            'Unit 9 - Statistics': [
+                'updateDistribution', 'calculateStatistics'
+            ]
+        };
+        
+        function runFunctionTest() {
+            let resultsHTML = '';
+            let totalFunctions = 0;
+            let accessibleFunctions = 0;
+            
+            Object.keys(unitFunctions).forEach(unit => {
+                resultsHTML += `<h3>${unit}</h3>`;
+                
+                unitFunctions[unit].forEach(funcName => {
+                    totalFunctions++;
+                    const isAccessible = typeof window[funcName] === 'function';
+                    const statusClass = isAccessible ? 'success' : 'error';
+                    const statusIcon = isAccessible ? '✅' : '❌';
+                    const statusText = isAccessible ? 'ACCESSIBLE' : 'NOT ACCESSIBLE';
+                    
+                    resultsHTML += `<div class="${statusClass}">${statusIcon} ${funcName}: ${statusText}</div>`;
+                    
+                    if (isAccessible) accessibleFunctions++;
+                });
+            });
+            
+            const successRate = totalFunctions > 0 ? (accessibleFunctions / totalFunctions * 100).toFixed(1) : 0;
+            resultsHTML = `<div><strong>Summary: ${accessibleFunctions}/${totalFunctions} functions accessible (${successRate}%)</strong></div><br>` + resultsHTML;
+            
+            document.getElementById('function-results').innerHTML = resultsHTML;
+            
+            return accessibleFunctions === totalFunctions;
+        }
+        
+        function testUnit(unitNumber) {
+            const resultDiv = document.getElementById('unit-results');
+            let result = '';
+            
+            try {
+                const unitId = `unit${unitNumber}`;
+                switchUnit(unitId);
+                result += `<div class="success">✅ Unit ${unitNumber}: switchUnit('${unitId}') executed successfully</div>`;
+                
+                // Test specific topic switching based on unit
+                let testTopic = '';
+                switch(unitNumber) {
+                    case 4: testTopic = 'exponential-functions'; break;
+                    case 5: testTopic = 'rational-functions'; break;
+                    case 6: testTopic = 'arithmetic-sequences'; break;
+                    case 7: testTopic = 'unit-circle-review'; break;
+                    case 8: testTopic = 'basic-probability'; break;
+                    case 9: testTopic = 'data-distributions'; break;
+                }
+                
+                if (testTopic) {
+                    switchTopic(testTopic);
+                    result += `<div class="success">✅ Unit ${unitNumber}: switchTopic('${testTopic}') executed successfully</div>`;
+                }
+                
+            } catch (error) {
+                result += `<div class="error">❌ Unit ${unitNumber}: ERROR - ${error.message}</div>`;
+            }
+            
+            resultDiv.innerHTML = result;
+        }
+        
+        // Run the test when page loads
+        window.onload = function() {
+            console.log('🧪 Running Units 4-9 function accessibility test...');
+            const allAccessible = runFunctionTest();
+            
+            if (allAccessible) {
+                console.log('✅ SUCCESS: All Units 4-9 functions are accessible!');
+            } else {
+                console.log('❌ PARTIAL FAILURE: Some functions are still not accessible');
+            }
+        };
+    </script>
+</body>
+</html>

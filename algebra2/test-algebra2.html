@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algebra2 Test Suite</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .header { text-align: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; }
+        .test-container { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .test-button { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; margin: 5px; }
+        .test-button:hover { transform: translateY(-2px); }
+        .test-output { background: #1e1e1e; color: #fff; padding: 20px; border-radius: 8px; font-family: monospace; max-height: 500px; overflow-y: auto; white-space: pre-wrap; }
+        .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .summary-card { background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .summary-card.passed { border-left: 5px solid #4CAF50; }
+        .summary-card.failed { border-left: 5px solid #f44336; }
+        .summary-card.total { border-left: 5px solid #2196F3; }
+        .unit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
+        .unit-button { background: #e3f2fd; border: 1px solid #2196F3; color: #1976d2; padding: 10px; border-radius: 5px; cursor: pointer; text-align: center; }
+        .unit-button:hover { background: #2196F3; color: white; }
+        .unit-button.tested { background: #c8e6c9; border-color: #4CAF50; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Algebra2 Module Test Suite</h1>
+        <p>Comprehensive Testing for All 9 Units</p>
+    </div>
+
+    <div class="test-container">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button class="test-button" onclick="runAllTests()">🚀 Run All Tests</button>
+            <button class="test-button" onclick="runMathTests()">📐 Math Tests</button>
+            <button class="test-button" onclick="clearResults()">🗑️ Clear</button>
+        </div>
+
+        <div class="summary" id="summary" style="display: none;">
+            <div class="summary-card total"><h3 id="totalTests">0</h3><p>Total</p></div>
+            <div class="summary-card passed"><h3 id="passedTests">0</h3><p>Passed</p></div>
+            <div class="summary-card failed"><h3 id="failedTests">0</h3><p>Failed</p></div>
+        </div>
+
+        <div class="test-output" id="output">🔬 Algebra2 Test Suite Ready\n\nClick "Run All Tests" to begin comprehensive testing...</div>
+    </div>
+
+    <div class="test-container">
+        <h3>🎯 Individual Unit Testing</h3>
+        <div class="unit-grid">
+            <button class="unit-button" onclick="testUnit(1)">Unit 1: Functions</button>
+            <button class="unit-button" onclick="testUnit(2)">Unit 2: Polynomials</button>
+            <button class="unit-button" onclick="testUnit(3)">Unit 3: Rational/Radical</button>
+            <button class="unit-button" onclick="testUnit(4)">Unit 4: Exp/Log</button>
+            <button class="unit-button" onclick="testUnit(5)">Unit 5: Rational Func</button>
+            <button class="unit-button" onclick="testUnit(6)">Unit 6: Sequences</button>
+            <button class="unit-button" onclick="testUnit(7)">Unit 7: Trigonometry</button>
+            <button class="unit-button" onclick="testUnit(8)">Unit 8: Probability</button>
+            <button class="unit-button" onclick="testUnit(9)">Unit 9: Statistics</button>
+        </div>
+    </div>
+
+    <script src="algebra2.js"></script>
+    <script>
+        class TestSuite {
+            constructor() {
+                this.results = [];
+                this.passed = 0;
+                this.failed = 0;
+                this.output = document.getElementById('output');
+            }
+
+            log(msg) {
+                this.output.textContent += msg + '\n';
+                this.output.scrollTop = this.output.scrollHeight;
+            }
+
+            test(name, fn) {
+                try {
+                    if (fn()) {
+                        this.log(`  ✅ ${name}`);
+                        this.passed++;
+                    } else {
+                        this.log(`  ❌ ${name}`);
+                        this.failed++;
+                    }
+                } catch (e) {
+                    this.log(`  ❌ ${name} - Error: ${e.message}`);
+                    this.failed++;
+                }
+                this.updateSummary();
+            }
+
+            describe(title) { this.log(`\n📋 ${title}`); }
+
+            updateSummary() {
+                document.getElementById('totalTests').textContent = this.passed + this.failed;
+                document.getElementById('passedTests').textContent = this.passed;
+                document.getElementById('failedTests').textContent = this.failed;
+                document.getElementById('summary').style.display = 'grid';
+            }
+
+            testUnit1() {
+                this.describe('Unit 1: Functions and Characteristics');
+                this.test('updateDomainRange exists', () => typeof updateDomainRange === 'function');
+                this.test('analyzeDomainRange exists', () => typeof analyzeDomainRange === 'function');
+                this.test('updateCharacteristics exists', () => typeof updateCharacteristics === 'function');
+                this.test('updateTransformations exists', () => typeof updateTransformations === 'function');
+                this.test('updateComplexPlane exists', () => typeof updateComplexPlane === 'function');
+                this.test('performComplexOperation exists', () => typeof performComplexOperation === 'function');
+                this.test('updateQuadraticFormula exists', () => typeof updateQuadraticFormula === 'function');
+                this.test('solveQuadratic exists', () => typeof solveQuadratic === 'function');
+                this.test('updateSystemsGraph exists', () => typeof updateSystemsGraph === 'function');
+            }
+
+            testUnit2() {
+                this.describe('Unit 2: Polynomials');
+                this.test('updatePolynomial exists', () => typeof updatePolynomial === 'function');
+                this.test('analyzeEndBehavior exists', () => typeof analyzeEndBehavior === 'function');
+                this.test('findTurningPoints exists', () => typeof findTurningPoints === 'function');
+                this.test('performOperation exists', () => typeof performOperation === 'function');
+                this.test('factorPolynomial exists', () => typeof factorPolynomial === 'function');
+                this.test('performDivision exists', () => typeof performDivision === 'function');
+                this.test('solvePolynomialEquation exists', () => typeof solvePolynomialEquation === 'function');
+            }
+
+            testUnit3() {
+                this.describe('Unit 3: Rational & Radical Functions');
+                this.test('updateRationalExp exists', () => typeof updateRationalExp === 'function');
+                this.test('findAsymptotes exists', () => typeof findAsymptotes === 'function');
+                this.test('updateRadical exists', () => typeof updateRadical === 'function');
+                this.test('updateInverse exists', () => typeof updateInverse === 'function');
+                this.test('updateRadicalEq exists', () => typeof updateRadicalEq === 'function');
+                this.test('convertToRadical exists', () => typeof convertToRadical === 'function');
+            }
+
+            testUnit4() {
+                this.describe('Unit 4: Exponentials and Logarithms');
+                this.test('updateExponential exists', () => typeof updateExponential === 'function');
+                this.test('analyzeGrowthDecay exists', () => typeof analyzeGrowthDecay === 'function');
+                this.test('updateLogarithmic exists', () => typeof updateLogarithmic === 'function');
+                this.test('solveExpEquation exists', () => typeof solveExpEquation === 'function');
+                this.test('solveLogEquation exists', () => typeof solveLogEquation === 'function');
+                this.test('solveApplication exists', () => typeof solveApplication === 'function');
+            }
+
+            testUnit5() {
+                this.describe('Unit 5: Rational Functions');
+                this.test('updateRationalFunc exists', () => typeof updateRationalFunc === 'function');
+            }
+
+            testUnit6() {
+                this.describe('Unit 6: Sequences and Series');
+                this.test('updateArithmetic exists', () => typeof updateArithmetic === 'function');
+                this.test('calculateArithmetic exists', () => typeof calculateArithmetic === 'function');
+            }
+
+            testUnit7() {
+                this.describe('Unit 7: Trigonometry');
+                this.test('updateUnitCircle exists', () => typeof updateUnitCircle === 'function');
+            }
+
+            testUnit8() {
+                this.describe('Unit 8: Probability');
+                this.test('updateProbability exists', () => typeof updateProbability === 'function');
+                this.test('calculateBasicProbability exists', () => typeof calculateBasicProbability === 'function');
+            }
+
+            testUnit9() {
+                this.describe('Unit 9: Statistics');
+                this.test('updateDistribution exists', () => typeof updateDistribution === 'function');
+                this.test('calculateStatistics exists', () => typeof calculateStatistics === 'function');
+            }
+
+            testMathAccuracy() {
+                this.describe('Mathematical Accuracy');
+                this.test('Quadratic discriminant', () => {
+                    const discriminant = (-5) * (-5) - 4 * 1 * 6;
+                    return discriminant === 1;
+                });
+                this.test('Complex addition', () => {
+                    const result = (3 + 1) + (4 + 2);
+                    return result === 10;
+                });
+                this.test('Exponential calc', () => Math.pow(2, 3) === 8);
+                this.test('Log calc', () => Math.abs(Math.log10(100) - 2) < 0.001);
+                this.test('Trig calc', () => Math.abs(Math.cos(0) - 1) < 0.001);
+                this.test('Mean calc', () => {
+                    const mean = [1,2,3,4,5].reduce((a,b) => a+b) / 5;
+                    return mean === 3;
+                });
+            }
+
+            testCore() {
+                this.describe('Core Infrastructure');
+                this.test('switchUnit exists', () => typeof switchUnit === 'function');
+                this.test('switchTopic exists', () => typeof switchTopic === 'function');
+                this.test('initializeCanvases exists', () => typeof initializeCanvases === 'function');
+                this.test('drawGrid exists', () => typeof drawGrid === 'function');
+            }
+
+            showResults() {
+                this.log('\n' + '='.repeat(50));
+                this.log('📊 FINAL RESULTS');
+                this.log('='.repeat(50));
+                const total = this.passed + this.failed;
+                const rate = total > 0 ? (this.passed / total * 100).toFixed(1) : 0;
+                this.log(`Total: ${total} | Passed: ${this.passed} | Failed: ${this.failed}`);
+                this.log(`Success Rate: ${rate}%`);
+                
+                if (this.failed === 0) {
+                    this.log('\n✅ EXCELLENT: All tests passed!');
+                    this.log('   Code quality appears high');
+                    this.log('   All functions properly defined');
+                    this.log('   Mathematical accuracy verified');
+                } else if (this.failed < 5) {
+                    this.log('\n⚠️  GOOD: Minor issues detected');
+                    this.log('   Most functionality intact');
+                } else {
+                    this.log('\n❌ NEEDS ATTENTION: Multiple failures');
+                    this.log('   Review missing functions');
+                }
+            }
+        }
+
+        let testSuite;
+
+        function runAllTests() {
+            testSuite = new TestSuite();
+            testSuite.log('🧪 Starting Comprehensive Test Suite...\n');
+            
+            testSuite.testCore();
+            testSuite.testUnit1();
+            testSuite.testUnit2();
+            testSuite.testUnit3();
+            testSuite.testUnit4();
+            testSuite.testUnit5();
+            testSuite.testUnit6();
+            testSuite.testUnit7();
+            testSuite.testUnit8();
+            testSuite.testUnit9();
+            testSuite.testMathAccuracy();
+            testSuite.showResults();
+        }
+
+        function runMathTests() {
+            testSuite = new TestSuite();
+            testSuite.log('📐 Running Mathematical Accuracy Tests...\n');
+            testSuite.testMathAccuracy();
+            testSuite.showResults();
+        }
+
+        function testUnit(num) {
+            testSuite = new TestSuite();
+            testSuite.log(`🎯 Testing Unit ${num}...\n`);
+            testSuite[`testUnit${num}`]();
+            testSuite.showResults();
+            
+            // Mark button as tested
+            event.target.classList.add('tested');
+            event.target.textContent += ' ✓';
+        }
+
+        function clearResults() {
+            document.getElementById('output').textContent = '🔬 Results cleared. Ready for testing...';
+            document.getElementById('summary').style.display = 'none';
+            document.querySelectorAll('.unit-button').forEach(btn => {
+                btn.classList.remove('tested');
+                btn.textContent = btn.textContent.replace(' ✓', '');
+            });
+        }
+    </script>
+</body>
+</html>

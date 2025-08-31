@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .flashcard-container {
+            perspective: 1000px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .flashcard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .flashcard-header h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        .flashcard-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .nav-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        .nav-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .nav-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .card-counter {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px solid #e9ecef;
+        }
+        .flashcard-main {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            perspective: 1000px;
+            width: 100%;
+        }
+        .flashcard {
+            width: 400px;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .flashcard-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .flashcard-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .card-content {
+            text-align: center;
+            padding: 30px;
+        }
+        .card-label {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .math-formula {
+            font-size: 2rem;
+            font-family: 'Times New Roman', serif;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .flip-hint {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            font-style: italic;
+        }
+        .flashcard-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .flashcard-controls .control-button {
+            min-width: 140px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .flashcard-controls .control-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .progress-tracker {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        .progress-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            color: #666;
+            font-weight: 500;
+        }
+        .all-cards-view {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+        }
+        .all-cards-view h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .mini-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        .mini-card-function {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-family: 'Times New Roman', serif;
+        }
+        .mini-card-derivative {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-family: 'Times New Roman', serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Flashcard Test</h1>
+        <p>This is a test page to verify the flashcard functionality.</p>
+        
+        <div class="flashcard-container">
+            <div class="flashcard-header">
+                <h2>Trigonometric Identities Flashcards</h2>
+                <p>Practice essential trigonometric identities</p>
+            </div>
+            
+            <div class="flashcard-navigation">
+                <button class="nav-button" id="prevBtn">← Previous</button>
+                <span class="card-counter" id="cardCounter">1 / 6</span>
+                <button class="nav-button" id="nextBtn">Next →</button>
+            </div>
+            
+            <div class="flashcard-main">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-front">
+                        <div class="card-content">
+                            <div class="card-label">Identity</div>
+                            <div class="math-formula" id="frontFormula">sin²θ + cos²θ = 1</div>
+                            <div class="flip-hint">Click to see formula →</div>
+                        </div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="card-content">
+                            <div class="card-label">Formula</div>
+                            <div class="math-formula" id="backFormula">sin²θ + cos²θ = 1</div>
+                            <div class="flip-hint">← Click to see identity</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flashcard-controls">
+                <button class="control-button" id="shuffleBtn">Shuffle Cards</button>
+                <button class="control-button" id="resetBtn">Reset Progress</button>
+                <button class="control-button" id="viewAllBtn">View All Identities</button>
+            </div>
+            
+            <div class="progress-tracker">
+                <div class="progress-label">Progress:</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0 / 6 cards reviewed</div>
+            </div>
+            
+            <div class="all-cards-view" id="allCardsView">
+                <h3>All Trigonometric Identities</h3>
+                <div class="cards-grid" id="cardsGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Flashcard system
+        const flashcards = [
+            {
+                id: 1,
+                name: "Pythagorean Identities",
+                identity: "sin²θ + cos²θ = 1",
+                formula: "sin²θ + cos²θ = 1\ntan²θ + 1 = sec²θ\n1 + cot²θ = csc²θ",
+                description: "Derived from the unit circle and Pythagorean theorem"
+            },
+            {
+                id: 2,
+                name: "Reciprocal Identities",
+                identity: "csc θ = 1/sin θ",
+                formula: "csc θ = 1/sin θ\nsec θ = 1/cos θ\ncot θ = 1/tan θ",
+                description: "Each trig function has a reciprocal"
+            },
+            {
+                id: 3,
+                name: "Quotient Identities",
+                identity: "tan θ = sin θ / cos θ",
+                formula: "tan θ = sin θ / cos θ\ncot θ = cos θ / sin θ",
+                description: "Express tangent and cotangent in terms of sine and cosine"
+            },
+            {
+                id: 4,
+                name: "Cofunction Identities",
+                identity: "sin(π/2 - θ) = cos θ",
+                formula: "sin(π/2 - θ) = cos θ\ncos(π/2 - θ) = sin θ\ntan(π/2 - θ) = cot θ",
+                description: "Functions of complementary angles"
+            },
+            {
+                id: 5,
+                name: "Even-Odd Identities",
+                identity: "sin(-θ) = -sin θ",
+                formula: "sin(-θ) = -sin θ (odd function)\ncos(-θ) = cos θ (even function)\ntan(-θ) = -tan θ (odd function)",
+                description: "Symmetry properties of trig functions"
+            },
+            {
+                id: 6,
+                name: "Sum and Difference Formulas",
+                identity: "sin(A ± B) = sin A cos B ± cos A sin B",
+                formula: "sin(A ± B) = sin A cos B ± cos A sin B\ncos(A ± B) = cos A cos B ∓ sin A sin B\ntan(A ± B) = (tan A ± tan B) / (1 ∓ tan A tan B)",
+                description: "Finding exact values of trig functions"
+            }
+        ];
+        
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let reviewedCards = new Set();
+        let cardOrder = [...Array(flashcards.length).keys()]; // [0, 1, 2, ..., 5]
+        
+        // Initialize UI
+        function initializeUI() {
+            updateCardDisplay();
+            updateProgress();
+            updateNavigationButtons();
+        }
+        
+        function updateCardDisplay() {
+            const card = flashcards[cardOrder[currentCardIndex]];
+            const flashcard = document.getElementById('flashcard');
+            const frontFormula = document.getElementById('frontFormula');
+            const backFormula = document.getElementById('backFormula');
+            const cardCounter = document.getElementById('cardCounter');
+            
+            if (frontFormula) frontFormula.textContent = card.identity;
+            if (backFormula) backFormula.textContent = card.formula;
+            if (cardCounter) cardCounter.textContent = `${currentCardIndex + 1} / ${flashcards.length}`;
+            
+            // Reset flip state when changing cards
+            if (flashcard) {
+                flashcard.classList.remove('flipped');
+                isFlipped = false;
+            }
+        }
+        
+        function updateProgress() {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            const percentage = (reviewedCards.size / flashcards.length) * 100;
+            
+            if (progressFill) progressFill.style.width = `${percentage}%`;
+            if (progressText) progressText.textContent = `${reviewedCards.size} / ${flashcards.length} cards reviewed`;
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn) prevBtn.disabled = currentCardIndex === 0;
+            if (nextBtn) nextBtn.disabled = currentCardIndex === flashcards.length - 1;
+        }
+        
+        function previousCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateCardDisplay();
+                updateNavigationButtons();
+            }
+        }
+        
+        function nextCard() {
+            if (currentCardIndex < flashcards.length - 1) {
+                currentCardIndex++;
+                updateCardDisplay();
+                updateNavigationButtons();
+            }
+        }
+        
+        function flipFlashcard() {
+            const flashcard = document.getElementById('flashcard');
+            if (flashcard) {
+                flashcard.classList.toggle('flipped');
+                isFlipped = !isFlipped;
+                
+                // Mark card as reviewed when flipped to see the answer
+                if (isFlipped) {
+                    reviewedCards.add(cardOrder[currentCardIndex]);
+                    updateProgress();
+                }
+            }
+        }
+        
+        function shuffleCards() {
+            // Fisher-Yates shuffle algorithm
+            for (let i = cardOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cardOrder[i], cardOrder[j]] = [cardOrder[j], cardOrder[i]];
+            }
+            
+            currentCardIndex = 0;
+            updateCardDisplay();
+            updateNavigationButtons();
+        }
+        
+        function resetProgress() {
+            reviewedCards.clear();
+            currentCardIndex = 0;
+            cardOrder = [...Array(flashcards.length).keys()];
+            updateCardDisplay();
+            updateProgress();
+            updateNavigationButtons();
+        }
+        
+        function showAllIdentities() {
+            const allCardsView = document.getElementById('allCardsView');
+            const cardsGrid = document.getElementById('cardsGrid');
+            
+            if (allCardsView && cardsGrid) {
+                const isVisible = allCardsView.style.display !== 'none';
+                
+                if (isVisible) {
+                    allCardsView.style.display = 'none';
+                    return;
+                }
+                
+                // Generate all cards HTML
+                cardsGrid.innerHTML = flashcards.map(card => `
+                    <div class="mini-card">
+                        <div class="mini-card-function">${card.name}</div>
+                        <div style="text-align: center; margin: 8px 0; font-weight: bold; color: #666;">↓</div>
+                        <div class="mini-card-derivative">${card.identity}</div>
+                    </div>
+                `).join('');
+                
+                allCardsView.style.display = 'block';
+            }
+        }
+        
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up event listeners for buttons
+            document.getElementById('prevBtn').addEventListener('click', previousCard);
+            document.getElementById('nextBtn').addEventListener('click', nextCard);
+            document.getElementById('flashcard').addEventListener('click', flipFlashcard);
+            document.getElementById('shuffleBtn').addEventListener('click', shuffleCards);
+            document.getElementById('resetBtn').addEventListener('click', resetProgress);
+            document.getElementById('viewAllBtn').addEventListener('click', showAllIdentities);
+            
+            // Initialize the UI
+            initializeUI();
+        });
+    </script>
+</body>
+</html>
