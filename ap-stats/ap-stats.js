@@ -34,7 +34,7 @@ function switchUnit(unitId) {
     }
     
     // Add active class to clicked unit card
-    const clickedCard = event.target.closest('.unit-card');
+    const clickedCard = event && event.target ? event.target.closest('.unit-card') : null;
     if (clickedCard) {
         clickedCard.classList.add('active');
     }
@@ -42,8 +42,15 @@ function switchUnit(unitId) {
     // Initialize the first topic for the unit
     const firstTopicButton = document.querySelector(`#${unitId} .topic-button`);
     if (firstTopicButton) {
-        const topicId = firstTopicButton.getAttribute('onclick').match(/'([^']+)'/)[1];
-        switchTopic(topicId);
+        // Extract topic ID from onclick attribute
+        const onclickAttr = firstTopicButton.getAttribute('onclick');
+        if (onclickAttr) {
+            const match = onclickAttr.match(/'([^']+)'/);
+            if (match && match[1]) {
+                const topicId = match[1];
+                switchTopic(topicId);
+            }
+        }
     }
 }
 
@@ -66,10 +73,12 @@ function switchTopic(topicId) {
         selectedTopic.classList.add('active');
     }
     
-    // Add active class to clicked topic button
-    const clickedButton = event.target;
-    if (clickedButton && clickedButton.classList.contains('topic-button')) {
-        clickedButton.classList.add('active');
+    // Add active class to clicked topic button (if event is available)
+    if (event && event.target) {
+        const clickedButton = event.target;
+        if (clickedButton && clickedButton.classList && clickedButton.classList.contains('topic-button')) {
+            clickedButton.classList.add('active');
+        }
     }
     
     // Initialize the selected topic
@@ -178,10 +187,15 @@ window.Unit1 = {
         if (!canvas) return;
         
         const ctx = canvasContexts['dataDisplaysCanvas'];
+        if (!ctx) return;
+        
         drawGrid(ctx, canvas);
         
-        const dataset = document.getElementById('datasetSelect')?.value || 'testScores';
-        const displayType = document.getElementById('displayType')?.value || 'histogram';
+        const datasetSelect = document.getElementById('datasetSelect');
+        const dataset = datasetSelect ? datasetSelect.value : 'testScores';
+        
+        const displayTypeSelect = document.getElementById('displayType');
+        const displayType = displayTypeSelect ? displayTypeSelect.value : 'histogram';
         
         // Sample data sets
         const datasets = {
@@ -261,7 +275,7 @@ window.Unit1 = {
         ctx.fillStyle = '#333';
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
-        ctx.scale(1, -1);
+        ctx.setTransform(1, 0, 0, -1, 0, 0); // Flip Y axis for text
         
         for (let i = 0; i < binCount; i++) {
             const x = (i * barWidth) - (width * 0.4) + (barWidth / 2);
@@ -269,13 +283,12 @@ window.Unit1 = {
             ctx.fillText(label.toString(), x, 20);
         }
         
-        ctx.scale(1, -1);
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     },
     
     drawDotPlot: function(ctx, canvas, data) {
         const width = canvas.width;
         const height = canvas.height;
-        const scale = 40;
         
         const min = Math.min(...data);
         const max = Math.max(...data);
@@ -288,7 +301,7 @@ window.Unit1 = {
             const x = ((value - min) / range) * (width * 0.8) - (width * 0.4);
             const y = (index % 10) * 15; // Stack dots vertically
             ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.arc(x, -y, 5, 0, 2 * Math.PI);
             ctx.fill();
         });
         
@@ -304,7 +317,7 @@ window.Unit1 = {
         ctx.fillStyle = '#333';
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
-        ctx.scale(1, -1);
+        ctx.setTransform(1, 0, 0, -1, 0, 0); // Flip Y axis for text
         
         for (let i = 0; i <= 10; i++) {
             const value = min + (i * range / 10);
@@ -312,7 +325,7 @@ window.Unit1 = {
             ctx.fillText(Math.round(value).toString(), x, 20);
         }
         
-        ctx.scale(1, -1);
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     },
     
     drawStemPlot: function(ctx, canvas, data) {
@@ -333,6 +346,7 @@ window.Unit1 = {
         ctx.fillStyle = '#333';
         ctx.font = '14px Arial';
         ctx.textAlign = 'left';
+        ctx.setTransform(1, 0, 0, -1, 0, 0); // Flip Y axis for text
         
         let yPos = -height/2 + 30;
         
@@ -341,6 +355,8 @@ window.Unit1 = {
             ctx.fillText(`${stem} | ${leaves}`, -width/2 + 20, yPos);
             yPos += 25;
         });
+        
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     },
     
     analyzeShape: function() {
@@ -411,8 +427,10 @@ window.Unit1 = {
         const canvas = document.getElementById('descriptiveStatsCanvas');
         if (canvas) {
             const ctx = canvasContexts['descriptiveStatsCanvas'];
-            drawGrid(ctx, canvas);
-            this.drawBoxplot(ctx, canvas, data, { mean, median, q1, q3, min: Math.min(...data), max: Math.max(...data) });
+            if (ctx) {
+                drawGrid(ctx, canvas);
+                this.drawBoxplot(ctx, canvas, data, { mean, median, q1, q3, min: Math.min(...data), max: Math.max(...data) });
+            }
         }
     },
     
@@ -433,29 +451,29 @@ window.Unit1 = {
         const boxBottom = stats.q1 * 2;
         const boxHeight = boxTop - boxBottom;
         
-        ctx.fillRect(xPos - boxWidth/2, boxBottom, boxWidth, boxHeight);
-        ctx.strokeRect(xPos - boxWidth/2, boxBottom, boxWidth, boxHeight);
+        ctx.fillRect(xPos - boxWidth/2, -boxBottom, boxWidth, -boxHeight);
+        ctx.strokeRect(xPos - boxWidth/2, -boxBottom, boxWidth, -boxHeight);
         
         // Draw median line
         ctx.beginPath();
-        ctx.moveTo(xPos - boxWidth/2, stats.median * 2);
-        ctx.lineTo(xPos + boxWidth/2, stats.median * 2);
+        ctx.moveTo(xPos - boxWidth/2, -stats.median * 2);
+        ctx.lineTo(xPos + boxWidth/2, -stats.median * 2);
         ctx.stroke();
         
         // Draw whiskers
         ctx.beginPath();
-        ctx.moveTo(xPos, stats.min * 2);
-        ctx.lineTo(xPos, boxBottom);
-        ctx.moveTo(xPos, boxTop);
-        ctx.lineTo(xPos, stats.max * 2);
+        ctx.moveTo(xPos, -stats.min * 2);
+        ctx.lineTo(xPos, -boxBottom);
+        ctx.moveTo(xPos, -boxTop);
+        ctx.lineTo(xPos, -stats.max * 2);
         ctx.stroke();
         
         // Draw whisker caps
         ctx.beginPath();
-        ctx.moveTo(xPos - 10, stats.min * 2);
-        ctx.lineTo(xPos + 10, stats.min * 2);
-        ctx.moveTo(xPos - 10, stats.max * 2);
-        ctx.lineTo(xPos + 10, stats.max * 2);
+        ctx.moveTo(xPos - 10, -stats.min * 2);
+        ctx.lineTo(xPos + 10, -stats.min * 2);
+        ctx.moveTo(xPos - 10, -stats.max * 2);
+        ctx.lineTo(xPos + 10, -stats.max * 2);
         ctx.stroke();
     },
     
@@ -474,7 +492,8 @@ window.Unit1 = {
     
     // Boxplots & Outliers
     updateBoxplot: function() {
-        const dataset = document.getElementById('boxplotDataset')?.value || 'class1';
+        const boxplotDatasetSelect = document.getElementById('boxplotDataset');
+        const dataset = boxplotDatasetSelect ? boxplotDatasetSelect.value : 'class1';
         
         // Sample data sets
         const datasets = {
@@ -491,52 +510,54 @@ window.Unit1 = {
         const canvas = document.getElementById('boxplotCanvas');
         if (canvas) {
             const ctx = canvasContexts['boxplotCanvas'];
-            drawGrid(ctx, canvas);
-            
-            if (dataset === 'comparison') {
-                this.drawComparativeBoxplots(ctx, canvas, data);
-            } else {
-                // Calculate statistics for single dataset
-                const values = data;
-                const n = values.length;
-                const sorted = [...values].sort((a, b) => a - b);
-                const median = n % 2 === 0 ? 
-                    (sorted[n/2 - 1] + sorted[n/2]) / 2 : 
-                    sorted[Math.floor(n/2)];
+            if (ctx) {
+                drawGrid(ctx, canvas);
+                
+                if (dataset === 'comparison') {
+                    this.drawComparativeBoxplots(ctx, canvas, data);
+                } else {
+                    // Calculate statistics for single dataset
+                    const values = data;
+                    const n = values.length;
+                    const sorted = [...values].sort((a, b) => a - b);
+                    const median = n % 2 === 0 ? 
+                        (sorted[n/2 - 1] + sorted[n/2]) / 2 : 
+                        sorted[Math.floor(n/2)];
+                        
+                    const q1Index = Math.floor(n * 0.25);
+                    const q3Index = Math.floor(n * 0.75);
+                    const q1 = sorted[q1Index];
+                    const q3 = sorted[q3Index];
+                    const iqr = q3 - q1;
                     
-                const q1Index = Math.floor(n * 0.25);
-                const q3Index = Math.floor(n * 0.75);
-                const q1 = sorted[q1Index];
-                const q3 = sorted[q3Index];
-                const iqr = q3 - q1;
-                
-                const lowerBound = q1 - 1.5 * iqr;
-                const upperBound = q3 + 1.5 * iqr;
-                
-                const outliers = values.filter(x => x < lowerBound || x > upperBound);
-                
-                const stats = {
-                    min: Math.min(...values),
-                    q1: q1,
-                    median: median,
-                    q3: q3,
-                    max: Math.max(...values)
-                };
-                
-                this.drawBoxplot(ctx, canvas, values, stats);
-                
-                const infoDiv = document.getElementById('boxplotResults');
-                if (infoDiv) {
-                    infoDiv.innerHTML = `
-                        <div><strong>Boxplot Analysis</strong></div>
-                        <div>Min: ${stats.min}</div>
-                        <div>Q1: ${stats.q1.toFixed(2)}</div>
-                        <div>Median: ${stats.median.toFixed(2)}</div>
-                        <div>Q3: ${stats.q3.toFixed(2)}</div>
-                        <div>Max: ${stats.max}</div>
-                        <div>IQR: ${(stats.q3 - stats.q1).toFixed(2)}</div>
-                        <div>Outliers: ${outliers.length > 0 ? outliers.join(', ') : 'None'}</div>
-                    `;
+                    const lowerBound = q1 - 1.5 * iqr;
+                    const upperBound = q3 + 1.5 * iqr;
+                    
+                    const outliers = values.filter(x => x < lowerBound || x > upperBound);
+                    
+                    const stats = {
+                        min: Math.min(...values),
+                        q1: q1,
+                        median: median,
+                        q3: q3,
+                        max: Math.max(...values)
+                    };
+                    
+                    this.drawBoxplot(ctx, canvas, values, stats);
+                    
+                    const infoDiv = document.getElementById('boxplotResults');
+                    if (infoDiv) {
+                        infoDiv.innerHTML = `
+                            <div><strong>Boxplot Analysis</strong></div>
+                            <div>Min: ${stats.min}</div>
+                            <div>Q1: ${stats.q1.toFixed(2)}</div>
+                            <div>Median: ${stats.median.toFixed(2)}</div>
+                            <div>Q3: ${stats.q3.toFixed(2)}</div>
+                            <div>Max: ${stats.max}</div>
+                            <div>IQR: ${(stats.q3 - stats.q1).toFixed(2)}</div>
+                            <div>Outliers: ${outliers.length > 0 ? outliers.join(', ') : 'None'}</div>
+                        `;
+                    }
                 }
             }
         }
@@ -591,11 +612,11 @@ window.Unit1 = {
         ctx.fillStyle = '#667eea';
         ctx.font = '14px Arial';
         ctx.textAlign = 'center';
-        ctx.scale(1, -1);
+        ctx.setTransform(1, 0, 0, -1, 0, 0); // Flip Y axis for text
         ctx.fillText('Class 1', 0, -70);
         ctx.fillStyle = '#f093fb';
         ctx.fillText('Class 2', 0, 30);
-        ctx.scale(1, -1);
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     },
     
     drawHorizontalBoxplot: function(ctx, yPos, stats) {
@@ -606,29 +627,29 @@ window.Unit1 = {
         const boxRight = stats.q3 * 2;
         const boxLength = boxRight - boxLeft;
         
-        ctx.fillRect(boxLeft, yPos - boxWidth/2, boxLength, boxWidth);
-        ctx.strokeRect(boxLeft, yPos - boxWidth/2, boxLength, boxWidth);
+        ctx.fillRect(boxLeft, -yPos - boxWidth/2, boxLength, boxWidth);
+        ctx.strokeRect(boxLeft, -yPos - boxWidth/2, boxLength, boxWidth);
         
         // Draw median line
         ctx.beginPath();
-        ctx.moveTo(stats.median * 2, yPos - boxWidth/2);
-        ctx.lineTo(stats.median * 2, yPos + boxWidth/2);
+        ctx.moveTo(stats.median * 2, -yPos - boxWidth/2);
+        ctx.lineTo(stats.median * 2, -yPos + boxWidth/2);
         ctx.stroke();
         
         // Draw whiskers
         ctx.beginPath();
-        ctx.moveTo(stats.min * 2, yPos);
-        ctx.lineTo(boxLeft, yPos);
-        ctx.moveTo(boxRight, yPos);
-        ctx.lineTo(stats.max * 2, yPos);
+        ctx.moveTo(stats.min * 2, -yPos);
+        ctx.lineTo(boxLeft, -yPos);
+        ctx.moveTo(boxRight, -yPos);
+        ctx.lineTo(stats.max * 2, -yPos);
         ctx.stroke();
         
         // Draw whisker caps
         ctx.beginPath();
-        ctx.moveTo(stats.min * 2, yPos - 10);
-        ctx.lineTo(stats.min * 2, yPos + 10);
-        ctx.moveTo(stats.max * 2, yPos - 10);
-        ctx.lineTo(stats.max * 2, yPos + 10);
+        ctx.moveTo(stats.min * 2, -yPos - 10);
+        ctx.lineTo(stats.min * 2, -yPos + 10);
+        ctx.moveTo(stats.max * 2, -yPos - 10);
+        ctx.lineTo(stats.max * 2, -yPos + 10);
         ctx.stroke();
     },
     
@@ -654,10 +675,15 @@ window.Unit2 = {
         if (!canvas) return;
         
         const ctx = canvasContexts['normalDistCanvas'];
+        if (!ctx) return;
+        
         drawGrid(ctx, canvas);
         
-        const mean = parseFloat(document.getElementById('normalMean')?.value) || 100;
-        const stdDev = parseFloat(document.getElementById('normalStdDev')?.value) || 15;
+        const normalMeanInput = document.getElementById('normalMean');
+        const mean = normalMeanInput ? parseFloat(normalMeanInput.value) || 100 : 100;
+        
+        const normalStdDevInput = document.getElementById('normalStdDev');
+        const stdDev = normalStdDevInput ? parseFloat(normalStdDevInput.value) || 15 : 15;
         
         this.drawNormalDistribution(ctx, canvas, mean, stdDev);
         
@@ -693,10 +719,10 @@ window.Unit2 = {
             const canvasY = scaledY * scale;
             
             if (first) {
-                ctx.moveTo(canvasX, canvasY);
+                ctx.moveTo(canvasX, -canvasY);
                 first = false;
             } else {
-                ctx.lineTo(canvasX, canvasY);
+                ctx.lineTo(canvasX, -canvasY);
             }
         }
         
@@ -734,9 +760,14 @@ window.Unit2 = {
     
     // Z-Scores
     calculateZScore: function() {
-        const dataValue = parseFloat(document.getElementById('dataValue')?.value) || 115;
-        const mean = parseFloat(document.getElementById('zMean')?.value) || 100;
-        const stdDev = parseFloat(document.getElementById('zStdDev')?.value) || 15;
+        const dataValueInput = document.getElementById('dataValue');
+        const dataValue = dataValueInput ? parseFloat(dataValueInput.value) || 115 : 115;
+        
+        const zMeanInput = document.getElementById('zMean');
+        const mean = zMeanInput ? parseFloat(zMeanInput.value) || 100 : 100;
+        
+        const zStdDevInput = document.getElementById('zStdDev');
+        const stdDev = zStdDevInput ? parseFloat(zStdDevInput.value) || 15 : 15;
         
         if (stdDev === 0) {
             const infoDiv = document.getElementById('zScoreResults');
@@ -764,8 +795,10 @@ window.Unit2 = {
         const canvas = document.getElementById('zScoreCanvas');
         if (canvas) {
             const ctx = canvasContexts['zScoreCanvas'];
-            drawGrid(ctx, canvas);
-            this.drawZScoreVisualization(ctx, canvas, mean, stdDev, dataValue, zScore);
+            if (ctx) {
+                drawGrid(ctx, canvas);
+                this.drawZScoreVisualization(ctx, canvas, mean, stdDev, dataValue, zScore);
+            }
         }
     },
     
@@ -819,9 +852,12 @@ window.Unit2 = {
         if (!canvas) return;
         
         const ctx = canvasContexts['densityCurveCanvas'];
+        if (!ctx) return;
+        
         drawGrid(ctx, canvas);
         
-        const curveType = document.getElementById('curveType')?.value || 'normal';
+        const curveTypeSelect = document.getElementById('curveType');
+        const curveType = curveTypeSelect ? curveTypeSelect.value : 'normal';
         
         switch(curveType) {
             case 'normal':
@@ -869,10 +905,10 @@ window.Unit2 = {
             const canvasY = scaledY * scale;
             
             if (first) {
-                ctx.moveTo(canvasX, canvasY);
+                ctx.moveTo(canvasX, -canvasY);
                 first = false;
             } else {
-                ctx.lineTo(canvasX, canvasY);
+                ctx.lineTo(canvasX, -canvasY);
             }
         }
         
@@ -880,7 +916,6 @@ window.Unit2 = {
     },
     
     drawUniformDensity: function(ctx, canvas) {
-        const scale = 40;
         const width = canvas.width;
         const height = canvas.height;
         
@@ -894,10 +929,10 @@ window.Unit2 = {
         const startX = -rectWidth / 2;
         const startY = 0;
         
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(startX + rectWidth, startY);
-        ctx.lineTo(startX + rectWidth, startY + rectHeight);
-        ctx.lineTo(startX, startY + rectHeight);
+        ctx.moveTo(startX, -startY);
+        ctx.lineTo(startX + rectWidth, -startY);
+        ctx.lineTo(startX + rectWidth, -startY - rectHeight);
+        ctx.lineTo(startX, -startY - rectHeight);
         ctx.closePath();
         ctx.stroke();
     },
@@ -923,10 +958,10 @@ window.Unit2 = {
             const canvasY = scaledY * scale;
             
             if (first) {
-                ctx.moveTo(canvasX, canvasY);
+                ctx.moveTo(canvasX, -canvasY);
                 first = false;
             } else {
-                ctx.lineTo(canvasX, canvasY);
+                ctx.lineTo(canvasX, -canvasY);
             }
         }
         
@@ -964,21 +999,27 @@ window.addEventListener('resize', () => {
     const visibleCanvases = document.querySelectorAll('.unit-content.active .stats-canvas');
     visibleCanvases.forEach(canvas => {
         const container = canvas.parentElement;
-        canvas.width = container.offsetWidth;
-        canvas.height = container.offsetHeight;
-        
-        // Reinitialize context
-        const ctx = canvasContexts[canvas.id];
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.scale(1, -1);
-        
-        drawGrid(ctx, canvas);
-        
-        // Trigger redraw of current content
-        const activeTopic = document.querySelector('.topic-content.active');
-        if (activeTopic) {
-            const topicId = activeTopic.id;
-            switchTopic(topicId);
+        if (container) {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            
+            // Reinitialize context
+            const ctx = canvasContexts[canvas.id];
+            if (ctx) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.scale(1, -1);
+                
+                drawGrid(ctx, canvas);
+                
+                // Trigger redraw of current content
+                const activeTopic = document.querySelector('.topic-content.active');
+                if (activeTopic) {
+                    const topicId = activeTopic.id;
+                    switchTopic(topicId);
+                }
+            }
         }
     });
 });
