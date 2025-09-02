@@ -1,12 +1,19 @@
 // Algebra 2 Interactive Simulations
 // Comprehensive implementation for 32-week curriculum
 
+// Use the core module's canvas context registry
 // Global variables for canvas contexts
-let canvasContexts = {};
+let canvasContexts = window.canvasContexts || {};
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    initializeCanvases();
+    // Use the core module's initializeCanvases function
+    if (typeof window.initializeCanvases === 'function') {
+        window.initializeCanvases();
+    } else {
+        // Fallback to local implementation
+        initializeCanvases();
+    }
     initializeDomainRange();
 });
 
@@ -182,9 +189,9 @@ function initializeCanvases() {
         const ctx = canvas.getContext('2d');
         canvasContexts[canvas.id] = ctx;
         
-        // Set canvas size
-        canvas.width = 600;
-        canvas.height = 400;
+        // Set canvas size based on parent container
+        canvas.width = canvas.parentElement ? canvas.parentElement.offsetWidth : 600;
+        canvas.height = canvas.parentElement ? canvas.parentElement.offsetHeight : 400;
         
         // Set up coordinate system
         ctx.translate(canvas.width / 2, canvas.height / 2);

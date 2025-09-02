@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Algebra 2 - Science and Math Projects</title>
+    <title>Algebra 2 - STEM Interactives</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -407,174 +407,187 @@
             border-radius: 20px;
             border: 2px solid #e9ecef;
         }
-        
+
         .flashcard-main {
-            display: none;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            perspective: 1000px;
         }
 
         .flashcard {
-            display: none;
+            width: 400px;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
         }
 
         .flashcard-front,
         .flashcard-back {
-            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .flashcard-front {
-            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
         .flashcard-back {
-            display: none;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
         }
 
         .card-content {
-            display: none;
+            text-align: center;
+            padding: 30px;
         }
 
         .card-label {
-            display: none;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .math-formula {
-            display: none;
+            font-size: 2.5rem;
+            font-family: 'Times New Roman', serif;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .flip-hint {
-            display: none;
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
-        
+
+        .flashcard-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .flashcard-controls .control-button {
+            width: 100%;
+            max-width: 200px;
+        }
+
         .progress-tracker {
-            display: none;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
         }
 
         .progress-label {
-            display: none;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
         }
 
         .progress-bar {
-            display: none;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
         }
 
         .progress-fill {
-            display: none;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 6px;
+            transition: width 0.3s ease;
         }
 
         .progress-text {
-            display: none;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
         }
 
         .all-cards-view {
-            display: none;
+            margin-top: 30px;
         }
 
         .all-cards-view h3 {
-            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
         }
 
         .cards-grid {
-            display: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
         }
 
         .mini-card {
-            display: none;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .mini-card-function,
+        .mini-card-derivative {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.2rem;
+            font-weight: bold;
         }
 
         .mini-card-function {
-            display: none;
+            color: #667eea;
+            margin-bottom: 5px;
         }
 
         .mini-card-derivative {
-            display: none;
+            color: #f093fb;
         }
-        
-        .flashcard h3 {
-            display: none;
-        }
-        
-        .flashcard p {
-            display: none;
-        }
-        
-        .flashcard .identity-formula {
-            display: none;
-        }
-        
-        .flashcard .identity-explanation {
-            display: none;
-        }
-        
-        .flashcard .identity-formula {
-            font-family: 'Times New Roman', serif;
-            font-weight: bold;
-        }
-        
-        .flashcard h3 {
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-        
-        .flashcard p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-        
-        .flashcard .identity-formula {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin: 15px 0;
-            font-family: 'Times New Roman', serif;
-        }
-        
-        .flashcard .identity-explanation {
-            font-size: 1rem;
-            margin-top: 15px;
-        }
-        
+
         @media (max-width: 768px) {
             .content-area {
                 grid-template-columns: 1fr;
             }
-            .unit-navigation {
-                grid-template-columns: 1fr;
+            
+            .topic-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
             }
+            
+            .topic-button {
+                min-width: 120px;
+                flex-shrink: 0;
+            }
+
             .container {
                 padding: 15px;
             }
             
-            .flashcard {
-                width: 90vw;
-                max-width: 350px;
-                height: 220px;
-            }
-
-            .math-formula {
-                font-size: 1.5rem;
-            }
-
-            .flashcard-navigation {
-                padding: 0 10px;
-            }
-
-            .nav-button {
-                min-width: 100px;
-                padding: 10px 16px;
-                font-size: 0.9rem;
-            }
-
-            .flashcard-controls {
-                flex-direction: column;
-                align-items: center;
-            }
-
             .flashcard-controls .control-button {
                 width: 100%;
-                max-width: 200px;
-            }
-        }
-    </style>
-</head>
                 max-width: 200px;
             }
         }
@@ -585,7 +598,7 @@
         <div class="header">
             <a href="../index.html" class="back-link">← Back to Main Menu</a>
             <h1>Algebra 2</h1>
-            <p class="subtitle">Comprehensive High School Algebra II Curriculum</p>
+            <p class="subtitle">Interactive High School Algebra II Curriculum</p>
         </div>
         
         <!-- Unit Navigation -->
@@ -1980,6 +1993,10 @@
         </div>
     </div>
 
+    <!-- Shared utilities -->
+    <script src="../shared/error-handler.js"></script>
+    <script src="../shared/zoom-controls.js"></script>
+    
     <!-- Core Algebra 2 Modules -->
     <script src="core/algebra2-core.js"></script>
     <script src="core/algebra2-ui.js"></script>
