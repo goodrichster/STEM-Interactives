@@ -1,4 +1,4 @@
-// Calculus Simulations - Graham's Mathematical Applications
+// Calculus Simulations - STEM Interactives
 // Interactive AP Calculus AB concepts including derivatives and differentiation rules
 
 class CalculusSimulations {
@@ -34,10 +34,23 @@ class CalculusSimulations {
                 const ctx = canvas.getContext('2d');
                 this.contexts[id] = ctx;
                 
+                // Mark canvas as using mathematical coordinates
+                canvas.setAttribute('data-math-coords', 'true');
+                
                 // Set up coordinate system
                 ctx.save(); // Save the original state
                 ctx.translate(canvas.width / 2, canvas.height / 2);
                 ctx.scale(1, -1); // Flip y-axis for mathematical coordinate system
+                
+                // Initialize zoom controls if available
+                if (window.STEMZoomControls) {
+                    window.STEMZoomControls.initializeZoomControls(id, {
+                        customRedrawFunction: (canvasId, zoom) => {
+                            // Redraw the current simulation/content
+                            this.redrawCurrentCanvas(canvasId);
+                        }
+                    });
+                }
             }
         });
     }
@@ -111,6 +124,61 @@ class CalculusSimulations {
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.scale(1, -1); // Flip y-axis for mathematical coordinate system
+        }
+    }
+    
+    redrawCurrentCanvas(canvasId) {
+        // Redraw content for the specified canvas based on current simulation
+        const canvas = this.canvases[canvasId];
+        const ctx = this.contexts[canvasId];
+        
+        if (!canvas || !ctx) return;
+        
+        // Clear and reset coordinate system
+        this.switchCanvas(canvasId);
+        
+        // Redraw based on current simulation and canvas type
+        switch (this.currentSimulation) {
+            case 'limit-definition':
+                if (canvasId === 'limitCanvas') {
+                    this.updateLimitDefinition();
+                }
+                break;
+            case 'power-rule':
+                if (canvasId === 'powerCanvas') {
+                    this.updatePowerRule();
+                }
+                break;
+            case 'product-rule':
+                if (canvasId === 'productCanvas') {
+                    this.updateProductRule();
+                }
+                break;
+            case 'quotient-rule':
+                if (canvasId === 'quotientCanvas') {
+                    this.updateQuotientRule();
+                }
+                break;
+            case 'chain-rule':
+                if (canvasId === 'chainCanvas') {
+                    this.updateChainRule();
+                }
+                break;
+            case 'critical-points':
+                if (canvasId === 'criticalCanvas') {
+                    this.updateCriticalPoints();
+                }
+                break;
+            case 'rational-analysis':
+                if (canvasId === 'rationalCanvas') {
+                    this.updateRationalAnalysis();
+                }
+                break;
+            case 'integration':
+                if (canvasId === 'integrationCanvas') {
+                    this.updateIntegration();
+                }
+                break;
         }
     }
 
@@ -1703,6 +1771,149 @@ class CalculusSimulations {
                 const midX = (x1 + x2) / 2;
                 const midY = this.interpolateValue(points, midX);
                 const canvasMidY = (midY - minY) * yScale;
+                
+                ctx.fillStyle = method === 'compare-all' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.6)';
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 2;
+                
+                const rectHeight = canvasMidY - baselineY;
+                
+                if (Math.abs(rectHeight) > 1 && Math.abs(rectWidth) > 1) {
+                    ctx.fillRect(canvasX1, baselineY, rectWidth, rectHeight);
+                    ctx.strokeRect(canvasX1, baselineY, rectWidth, rectHeight);
+                }
+            }
+            
+            // Trapezoidal Rule
+            if (method === 'trapezoidal' || method === 'compare-all') {
+                ctx.fillStyle = method === 'compare-all' ? 'rgba(244, 67, 54, 0.3)' : 'rgba(244, 67, 54, 0.6)';
+                ctx.strokeStyle = '#F44336';
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(canvasX1, baselineY);
+                ctx.lineTo(canvasX1, canvasY1);
+                ctx.lineTo(canvasX2, canvasY2);
+                ctx.lineTo(canvasX2, baselineY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+    }
+
+    visualizeFunctionIntegration(ctx, canvas, funcStr, method) {
+        const n = parseInt(document.getElementById('numSubintervals').value);
+        
+        if (n < 1) return;
+        
+        // Get the function's x range from the canvas
+        const scale = 40;
+        const minX = -canvas.width/(2*scale);
+        const maxX = canvas.width/(2*scale);
+        const xRange = maxX - minX;
+        const deltaX = xRange / n;
+        
+        // Evaluate function at multiple points to find min/max y values
+        let minY = Infinity;
+        let maxY = -Infinity;
+        const points = [];
+        
+        for (let x = minX; x <= maxX; x += 0.1) {
+            const y = this.evaluateFunction(funcStr, x);
+            if (!isNaN(y) && isFinite(y) && Math.abs(y) < 15) {
+                points.push({x, y});
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+            }
+        }
+        
+        // Add padding to y range
+        const yRange = maxY - minY;
+        const yPadding = yRange * 0.1;
+        const paddedMinY = minY - yPadding;
+        const paddedMaxY = maxY + yPadding;
+        const paddedYRange = paddedMaxY - paddedMinY;
+        
+        // Calculate scaling factors
+        const plotWidth = canvas.width * 0.72;
+        const plotHeight = canvas.height * 0.62;
+        const xScale = plotWidth / xRange;
+        const yScale = plotHeight / paddedYRange;
+        
+        // Calculate baseline y position (bottom of the data area)
+        const baselineY = (paddedMinY - paddedMinY) * yScale;
+        
+        // Store scaling info for use in visualization
+        this.integrationScale = { 
+            xScale, 
+            yScale, 
+            minX: paddedMinY, 
+            minY: paddedMinY, 
+            plotWidth, 
+            plotHeight,
+            dataMinX: minX,
+            dataMaxX: maxX,
+            dataMinY: minY,
+            dataMaxY: maxY,
+            paddedMinY,
+            paddedMaxY
+        };
+        
+        for (let i = 0; i < n; i++) {
+            const x1 = minX + i * deltaX;
+            const x2 = minX + (i + 1) * deltaX;
+            
+            const y1 = this.evaluateFunction(funcStr, x1);
+            const y2 = this.evaluateFunction(funcStr, x2);
+            
+            if (isNaN(y1) || isNaN(y2) || !isFinite(y1) || !isFinite(y2)) continue;
+            
+            const canvasX1 = (x1 - minX) * xScale - plotWidth/2;
+            const canvasX2 = (x2 - minX) * xScale - plotWidth/2;
+            const canvasY1 = (y1 - paddedMinY) * yScale;
+            const canvasY2 = (y2 - paddedMinY) * yScale;
+            
+            const rectWidth = canvasX2 - canvasX1;
+            
+            // Left Riemann Sum
+            if (method === 'left' || method === 'compare-riemann' || method === 'compare-all') {
+                ctx.fillStyle = method === 'compare-riemann' || method === 'compare-all' ? 'rgba(255, 152, 0, 0.4)' : 'rgba(255, 152, 0, 0.6)';
+                ctx.strokeStyle = '#FF9800';
+                ctx.lineWidth = 2;
+                
+                // Draw rectangle from baseline to function value at left endpoint
+                const rectHeight = canvasY1 - baselineY;
+                
+                if (Math.abs(rectHeight) > 1 && Math.abs(rectWidth) > 1) {
+                    ctx.fillRect(canvasX1, baselineY, rectWidth, rectHeight);
+                    ctx.strokeRect(canvasX1, baselineY, rectWidth, rectHeight);
+                }
+            }
+            
+            // Right Riemann Sum
+            if (method === 'right' || method === 'compare-riemann' || method === 'compare-all') {
+                ctx.fillStyle = method === 'compare-riemann' || method === 'compare-all' ? 'rgba(156, 39, 176, 0.4)' : 'rgba(156, 39, 176, 0.6)';
+                ctx.strokeStyle = '#9C27B0';
+                ctx.lineWidth = 2;
+                
+                // Draw rectangle from baseline to function value at right endpoint
+                const rectHeight = canvasY2 - baselineY;
+                
+                if (Math.abs(rectHeight) > 1 && Math.abs(rectWidth) > 1) {
+                    ctx.fillRect(canvasX1, baselineY, rectWidth, rectHeight);
+                    ctx.strokeRect(canvasX1, baselineY, rectWidth, rectHeight);
+                }
+            }
+            
+            // Midpoint Rule
+            if (method === 'midpoint' || method === 'compare-all') {
+                const midX = (x1 + x2) / 2;
+                const midY = this.evaluateFunction(funcStr, midX);
+                
+                if (isNaN(midY) || !isFinite(midY)) continue;
+                
+                const canvasMidY = (midY - paddedMinY) * yScale;
                 
                 ctx.fillStyle = method === 'compare-all' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.6)';
                 ctx.strokeStyle = '#4CAF50';
