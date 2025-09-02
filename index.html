@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Science and Math Projects</title>
+    <title>STEM Interactives</title>
     <style>
         * {
             margin: 0;
@@ -96,6 +96,10 @@
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
         }
 
+        .project-card.ap-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
         .project-card.disabled {
             background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
             cursor: not-allowed;
@@ -138,8 +142,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Science and Math Projects</h1>
-        <p class="subtitle">Interactive Mathematics Applications</p>
+        <h1>STEM Interactives</h1>
+        <p class="subtitle">Interactive Mathematics and Science Applications</p>
         
         <div class="projects-grid">
             <a href="./calculator/index.html" class="project-card calculator">
@@ -176,7 +180,18 @@
                 <div class="project-title">Algebra 2</div>
                 <div class="project-description">Comprehensive high school Algebra II curriculum with 9 units</div>
             </a>
+            
+            <a href="./ap-stats/index.html" class="project-card ap-stats">
+                <div class="project-title">AP Statistics</div>
+                <div class="project-description">Interactive AP Statistics curriculum with 9 units</div>
+            </a>
         </div>
     </div>
+    
+    <!-- Shared utilities -->
+    <script src="shared/error-handler.js"></script>
+    <script src="shared/canvas-utils.js"></script>
+    <script src="shared/math-utils.js"></script>
+    <script src="shared/zoom-controls.js"></script>
 </body>
 </html>
