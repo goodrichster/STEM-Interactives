@@ -334,6 +334,7 @@ class LogicTutor {
             currentIndex: 0,
             reviewed: new Set(),
             mastered: new Set(),
+            incorrect: new Set(),
             currentCard: null
         };
         
@@ -538,6 +539,11 @@ class LogicTutor {
         const categoryFilterSelect = document.getElementById('categoryFilterSelect');
         if (categoryFilterSelect) {
             categoryFilterSelect.addEventListener('change', (e) => this.filterFlashcards(e.target.value));
+        }
+        
+        const practiceModeSelect = document.getElementById('practiceModeSelect');
+        if (practiceModeSelect) {
+            practiceModeSelect.addEventListener('change', () => this.applyPracticeMode());
         }
     }
     
@@ -927,8 +933,20 @@ class LogicTutor {
             return;
         }
 
+        // Check if card is mastered or incorrect
+        const isMastered = this.flashcardState.mastered.has(this.flashcardState.currentCard.id);
+        const isIncorrect = this.flashcardState.incorrect.has(this.flashcardState.currentCard.id);
+        
+        // Add visual indicator classes
+        let cardClass = '';
+        if (isMastered) {
+            cardClass = ' mastered-card';
+        } else if (isIncorrect) {
+            cardClass = ' incorrect-card';
+        }
+        
         container.innerHTML = `
-            <div class="flashcard-single" id="flashcardContainer">
+            <div class="flashcard-single${cardClass}" id="flashcardContainer">
                 <div class="card-container">
                     <div class="card-face card-front">
                         <div class="card-label">QUESTION</div>
@@ -938,6 +956,10 @@ class LogicTutor {
                     <div class="card-face card-back">
                         <div class="card-label">ANSWER</div>
                         <div class="card-content">${this.flashcardState.currentCard.back}</div>
+                        <div class="feedback-buttons">
+                            <button class="control-button correct" id="gotItRightBtn">✓ Got it Right</button>
+                            <button class="control-button stop" id="gotItWrongBtn">✗ Got it Wrong</button>
+                        </div>
                         <div class="click-hint">Click to flip back</div>
                     </div>
                 </div>
@@ -962,6 +984,8 @@ class LogicTutor {
         const prevBtn = document.getElementById('prevCardBtn');
         const nextBtn = document.getElementById('nextCardBtn');
         const shuffleBtn = document.getElementById('shuffleCardsBtn');
+        const gotItRightBtn = document.getElementById('gotItRightBtn');
+        const gotItWrongBtn = document.getElementById('gotItWrongBtn');
 
         if (flashcardContainer) {
             flashcardContainer.addEventListener('click', () => this.flipCurrentCard());
@@ -985,6 +1009,20 @@ class LogicTutor {
             shuffleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.shuffleFlashcards();
+            });
+        }
+
+        if (gotItRightBtn) {
+            gotItRightBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.markCardAsMastered(this.flashcardState.currentCard.id);
+            });
+        }
+
+        if (gotItWrongBtn) {
+            gotItWrongBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.markCardAsIncorrect(this.flashcardState.currentCard.id);
             });
         }
     }
@@ -1026,9 +1064,23 @@ class LogicTutor {
         const categoryFilter = document.getElementById('categoryFilterSelect');
         const category = categoryFilter ? categoryFilter.value : 'all';
         
+        const practiceModeSelect = document.getElementById('practiceModeSelect');
+        const practiceMode = practiceModeSelect ? practiceModeSelect.value : 'all';
+        
         let cardsToShow = this.flashcards;
+        
+        // Apply category filter
         if (category !== 'all') {
             cardsToShow = this.flashcards.filter(card => card.category === category);
+        }
+        
+        // Apply practice mode filter
+        if (practiceMode === 'incorrect') {
+            // Show only incorrect cards
+            cardsToShow = cardsToShow.filter(card => this.flashcardState.incorrect.has(card.id));
+        } else if (practiceMode === 'unmastered') {
+            // Show only unmastered cards (not in mastered set and not in incorrect set)
+            cardsToShow = cardsToShow.filter(card => !this.flashcardState.mastered.has(card.id) && !this.flashcardState.incorrect.has(card.id));
         }
         
         return cardsToShow;
@@ -1060,6 +1112,18 @@ class LogicTutor {
         // Check if we're in grid view mode
         const container = document.getElementById('flashcardsContainer');
         const isInGridMode = container && container.querySelector('.flashcard-grid');
+        
+        this.renderFlashcards(category, isInGridMode ? 'grid' : 'single');
+    }
+    
+    applyPracticeMode() {
+        // Check if we're in grid view mode
+        const container = document.getElementById('flashcardsContainer');
+        const isInGridMode = container && container.querySelector('.flashcard-grid');
+        
+        // Get current category filter
+        const categoryFilter = document.getElementById('categoryFilterSelect');
+        const category = categoryFilter ? categoryFilter.value : 'all';
         
         this.renderFlashcards(category, isInGridMode ? 'grid' : 'single');
     }
@@ -1096,11 +1160,27 @@ class LogicTutor {
             
             const categoryName = categoryNames[card.category] || card.category;
             
+            // Check if card is mastered or incorrect
+            const isMastered = this.flashcardState.mastered.has(card.id);
+            const isIncorrect = this.flashcardState.incorrect.has(card.id);
+            
+            // Add visual indicator classes
+            let cardClass = '';
+            if (isMastered) {
+                cardClass = ' mastered-card';
+            } else if (isIncorrect) {
+                cardClass = ' incorrect-card';
+            }
+            
             gridHTML += `
-            <div class="flashcard-grid-item" data-card-id="${card.id}" data-index="${index}">
+            <div class="flashcard-grid-item${cardClass}" data-card-id="${card.id}" data-index="${index}">
                 <div class="flashcard-grid-category">${categoryName}</div>
                 <div class="flashcard-grid-front">${card.front}</div>
                 <div class="flashcard-grid-back">${card.back}</div>
+                <div class="feedback-buttons">
+                    <button class="control-button correct small" data-card-id="${card.id}" data-action="right">✓</button>
+                    <button class="control-button stop small" data-card-id="${card.id}" data-action="wrong">✗</button>
+                </div>
             </div>`;
         });
         
@@ -1112,14 +1192,49 @@ class LogicTutor {
         const gridItems = container.querySelectorAll('.flashcard-grid-item');
         gridItems.forEach(item => {
             item.addEventListener('click', (e) => {
+                // Only flip if not clicking on a feedback button
+                if (!e.target.hasAttribute('data-action')) {
+                    e.stopPropagation();
+                    item.classList.toggle('flipped');
+                    
+                    // Mark as reviewed when flipped
+                    if (item.classList.contains('flipped')) {
+                        const cardId = parseInt(item.getAttribute('data-card-id'));
+                        this.flashcardState.reviewed.add(cardId);
+                        this.updateFlashcardInfo();
+                    }
+                }
+            });
+        });
+        
+        // Add event listeners for feedback buttons
+        const feedbackButtons = container.querySelectorAll('.feedback-buttons button');
+        feedbackButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
                 e.stopPropagation();
-                item.classList.toggle('flipped');
+                const cardId = parseInt(button.getAttribute('data-card-id'));
+                const action = button.getAttribute('data-action');
                 
-                // Mark as reviewed when flipped
-                if (item.classList.contains('flipped')) {
-                    const cardId = parseInt(item.getAttribute('data-card-id'));
-                    this.flashcardState.reviewed.add(cardId);
-                    this.updateFlashcardInfo();
+                if (action === 'right') {
+                    this.markCardAsMastered(cardId);
+                } else if (action === 'wrong') {
+                    this.markCardAsIncorrect(cardId);
+                }
+                
+                // Update the UI to show the card has been marked
+                const cardElement = container.querySelector(`.flashcard-grid-item[data-card-id="${cardId}"]`);
+                if (cardElement) {
+                    if (action === 'right') {
+                        cardElement.style.border = '2px solid #28a745';
+                    } else {
+                        cardElement.style.border = '2px solid #dc3545';
+                    }
+                    
+                    // Remove the feedback buttons after marking
+                    const feedbackContainer = cardElement.querySelector('.feedback-buttons');
+                    if (feedbackContainer) {
+                        feedbackContainer.remove();
+                    }
                 }
             });
         });
@@ -1134,12 +1249,16 @@ class LogicTutor {
             currentIndex: 0,
             reviewed: new Set(),
             mastered: new Set(),
+            incorrect: new Set(),
             currentCard: this.flashcards[0] || null
         };
         
-        // Reset filter
+        // Reset filters
         const categoryFilter = document.getElementById('categoryFilterSelect');
         if (categoryFilter) categoryFilter.value = 'all';
+        
+        const practiceModeSelect = document.getElementById('practiceModeSelect');
+        if (practiceModeSelect) practiceModeSelect.value = 'all';
         
         // Check if we're in grid view mode
         const container = document.getElementById('flashcardsContainer');
@@ -1162,6 +1281,28 @@ class LogicTutor {
         if (positionElement) {
             positionElement.textContent = `Card ${this.flashcardState.currentIndex + 1} of ${this.getTotalFilteredCards()}`;
         }
+    }
+    
+    markCardAsMastered(cardId) {
+        // Remove from incorrect set if present
+        this.flashcardState.incorrect.delete(cardId);
+        // Add to mastered set
+        this.flashcardState.mastered.add(cardId);
+        // Update UI
+        this.updateFlashcardInfo();
+        // Move to next card
+        this.nextCard();
+    }
+    
+    markCardAsIncorrect(cardId) {
+        // Remove from mastered set if present
+        this.flashcardState.mastered.delete(cardId);
+        // Add to incorrect set
+        this.flashcardState.incorrect.add(cardId);
+        // Update UI
+        this.updateFlashcardInfo();
+        // Move to next card
+        this.nextCard();
     }
 }
 
