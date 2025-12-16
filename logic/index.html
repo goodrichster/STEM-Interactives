@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Tutor - Discrete Math Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .module-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+
+        .tab-button.active:hover {
+            background: #5a6fd8;
+        }
+
+        .module-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .module-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .module-area {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .content-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .controls-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .control-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .control-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .control-button.stop {
+            background: #dc3545;
+        }
+
+        .control-button.stop:hover {
+            background: #c82333;
+        }
+
+        .control-button.secondary {
+            background: #6c757d;
+        }
+
+        .control-button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .info-panel {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c5aa0;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .module-description {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .module-description h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .module-description p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .formula {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+        }
+
+        .truth-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .truth-table th,
+        .truth-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .truth-table th {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .truth-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .flashcard {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .flashcard:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .flashcard-front {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .flashcard-back {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .flashcard.flipped .flashcard-back {
+            display: block;
+        }
+        
+        /* Single card display styles */
+        .flashcard-single {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            perspective: 1000px;
+        }
+        
+        .flashcard-single:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .flashcard-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .card-category {
+            background: #e8f4fd;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        
+        .card-type {
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        
+        .flashcard-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 200px;
+        }
+        
+        .flashcard-front-single {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .flashcard-back-single {
+            font-size: 1.2rem;
+            padding: 20px;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .answer-label {
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        .flashcard-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .flashcard-navigation {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .no-cards-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Grid view for show all cards */
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .flashcard-grid-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .flashcard-grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .flashcard-grid-front,
+        .flashcard-grid-back {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .flashcard-grid-back {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+            display: none;
+        }
+        
+        .flashcard-grid-item.flipped .flashcard-grid-back {
+            display: block;
+        }
+        
+        .flashcard-grid-category {
+            font-size: 0.8rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        /* Flippable card styles */
+        .card-container {
+            width: 100%;
+            height: 350px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            margin-bottom: 20px;
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 2px solid #5a6fd8;
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: #333;
+            transform: rotateY(180deg);
+            border: 2px solid #34d17a;
+        }
+        
+        .card-content {
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            overflow-y: auto;
+            max-height: 250px;
+        }
+        
+        .card-label {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+        
+        .flipped .card-container {
+            transform: rotateY(180deg);
+        }
+        
+        .click-hint {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+
+        .proof-builder {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .proof-builder th,
+        .proof-builder td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .proof-builder th {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .proof-builder tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .proof-row-input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .proof-reason-select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .counterexample-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .neutral {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .domain-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .domain-option {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .domain-option.selected {
+            border-color: #667eea;
+            background-color: #e8f4fd;
+            font-weight: bold;
+        }
+
+        .quantifier-selector {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .quantifier-option {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quantifier-option.selected {
+            border-color: #667eea;
+            background-color: #e8f4fd;
+            font-weight: bold;
+        }
+
+        .law-option {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .law-option:hover {
+            background-color: #f0f0f0;
+        }
+
+        .law-option.selected {
+            border-color: #667eea;
+            background-color: #e8f4fd;
+            font-weight: bold;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .step {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .step.active {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .module-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .module-tabs {
+                justify-content: center;
+            }
+            
+            .tab-button {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="../index.html" class="back-link">← Back to Main Menu</a>
+            <h1>Logic Tutor</h1>
+            <p class="subtitle">Master Quantifiers, Negation, Conditionals & Proofs</p>
+        </div>
+
+        <div class="module-tabs">
+            <button class="tab-button active" data-tab="quantifiers">Quantifiers & Domains</button>
+            <button class="tab-button" data-tab="negation">Negation Wizard</button>
+            <button class="tab-button" data-tab="counterexamples">Counterexample Builder</button>
+            <button class="tab-button" data-tab="conditionals">Conditionals & Equivalence</button>
+            <button class="tab-button" data-tab="laws">Laws of Reasoning</button>
+            <button class="tab-button" data-tab="proofs">Statement–Reason Proofs</button>
+            <button class="tab-button" data-tab="flashcards">Flashcards</button>
+        </div>
+
+        <!-- Quantifiers & Domains Module -->
+        <div class="module-content active" id="quantifiers-content">
+            <div class="module-description">
+                <h3>Quantifiers & Domains</h3>
+                <p>Learn about universal (∀) and existential (∃) quantifiers, domains (ℕ, ℤ, ℚ, ℝ), and how to translate between English and symbolic logic.</p>
+                <p><strong>Key Concepts:</strong></p>
+                <p><strong>Universal Quantifier (∀):</strong> "For all" - asserts that a property holds for every element in a domain.</p>
+                <p><strong>Existential Quantifier (∃):</strong> "There exists" - asserts that a property holds for at least one element in a domain.</p>
+                <p><strong>"No" Statements:</strong> "No x..." translates to ∀x, ¬(...)</p>
+                <p><strong>Domains:</strong> The set over which quantifiers range (ℕ = Natural Numbers, ℤ = Integers, ℚ = Rationals, ℝ = Reals).</p>
+                <div class="formula">
+                    <strong>Symbolic Translation Examples:</strong><br>
+                    "All integers are even" → ∀x ∈ ℤ, x is even<br>
+                    "Some real numbers are negative" → ∃x ∈ ℝ, x < 0<br>
+                    "No natural numbers are negative" → ∀x ∈ ℕ, x ≥ 0
+                </div>
+            </div>
+            
+            <div class="module-area">
+                <div class="content-panel">
+                    <h3>Quantifier Translation Practice</h3>
+                    <div id="quantifierCanvas"></div>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Select Domain</label>
+                        <div class="domain-selector" id="domainSelector">
+                            <div class="domain-option" data-domain="ℕ">ℕ (Natural)</div>
+                            <div class="domain-option" data-domain="ℤ">ℤ (Integers)</div>
+                            <div class="domain-option" data-domain="ℚ">ℚ (Rationals)</div>
+                            <div class="domain-option" data-domain="ℝ">ℝ (Reals)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Select Quantifier</label>
+                        <div class="quantifier-selector" id="quantifierSelector">
+                            <div class="quantifier-option" data-quantifier="∀">∀ (All)</div>
+                            <div class="quantifier-option" data-quantifier="∃">∃ (Some)</div>
+                            <div class="quantifier-option" data-quantifier="No">No</div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Predicate</label>
+                        <input type="text" class="control-input" id="predicateInput" placeholder="Enter predicate (e.g., 'x is even')">
+                    </div>
+                    
+                    <button class="control-button" id="translateBtn">Translate to Symbolic Form</button>
+                    <button class="control-button secondary" id="generateStatementBtn">Generate Random Statement</button>
+                    <button class="control-button stop" id="resetQuantifiersBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Translation Result</div>
+                        <div class="info-item"><span>Symbolic Form:</span><span id="symbolicResult">-</span></div>
+                        <div class="info-item"><span>Verification:</span><span id="translationVerification">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Negation Wizard Module -->
+        <div class="module-content" id="negation-content">
+            <div class="module-description">
+                <h3>Negation Wizard</h3>
+                <p>Learn how to correctly negate quantified statements by switching the quantifier AND negating the predicate. Avoid common mistakes like swapping quantifiers without negating predicates.</p>
+                <p><strong>De Morgan's Laws for Quantifiers:</strong></p>
+                <p>¬∀x ∈ D, P(x) ≡ ∃x ∈ D, ¬P(x)</p>
+                <p>¬∃x ∈ D, P(x) ≡ ∀x ∈ D, ¬P(x)</p>
+                <p><strong>Common Mistakes to Avoid:</strong></p>
+                <p>❌ ¬∀x ∈ D, P(x) ≡ ∃x ∈ D, P(x) (Wrong: swapped quantifier but didn't negate predicate)</p>
+                <p>✅ ¬∀x ∈ D, P(x) ≡ ∃x ∈ D, ¬P(x) (Correct: swapped quantifier AND negated predicate)</p>
+                <div class="formula">
+                    <strong>Negation Process:</strong><br>
+                    Step 1: Switch the quantifier (∀ ↔ ∃)<br>
+                    Step 2: Negate the predicate (P(x) → ¬P(x))<br>
+                    Step 3: Verify the result makes logical sense
+                </div>
+            </div>
+            
+            <div class="module-area">
+                <div class="content-panel">
+                    <h3>Negation Wizard</h3>
+                    <div class="step-indicator">
+                        <div class="step active" id="step1">1. Original Statement</div>
+                        <div class="step" id="step2">2. Switch Quantifier</div>
+                        <div class="step" id="step3">3. Negate Predicate</div>
+                        <div class="step" id="step4">4. Final Result</div>
+                    </div>
+                    <div id="negationCanvas"></div>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Original Statement</label>
+                        <select class="control-input" id="originalStatementSelect">
+                            <option value="">Select or enter below</option>
+                            <option value="∀x ∈ ℤ, x is even">∀x ∈ ℤ, x is even</option>
+                            <option value="∃x ∈ ℝ, x² = -1">∃x ∈ ℝ, x² = -1</option>
+                            <option value="∀x ∈ ℕ, x ≥ 0">∀x ∈ ℕ, x ≥ 0</option>
+                            <option value="∃x ∈ ℚ, x² = 2">∃x ∈ ℚ, x² = 2</option>
+                        </select>
+                        <input type="text" class="control-input" id="customStatementInput" placeholder="Or enter custom statement" style="margin-top: 10px;">
+                    </div>
+                    
+                    <button class="control-button" id="startNegationBtn">Start Negation Process</button>
+                    <button class="control-button" id="switchQuantifierBtn" disabled>Step 1: Switch Quantifier</button>
+                    <button class="control-button" id="negatePredicateBtn" disabled>Step 2: Negate Predicate</button>
+                    <button class="control-button" id="finalizeNegationBtn" disabled>Step 3: Finalize Negation</button>
+                    <button class="control-button secondary" id="explainMistakeBtn" disabled>Explain Common Mistake</button>
+                    <button class="control-button stop" id="resetNegationBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Negation Progress</div>
+                        <div class="info-item"><span>Current Step:</span><span id="currentStep">-</span></div>
+                        <div class="info-item"><span>Status:</span><span id="negationStatus">Waiting to start</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Counterexample Builder Module -->
+        <div class="module-content" id="counterexamples-content">
+            <div class="module-description">
+                <h3>Counterexample Builder</h3>
+                <p>Learn how to prove universal statements false with a single counterexample, and how to validate existential statements with examples.</p>
+                <p><strong>Universal Statements (∀):</strong> Require one counterexample to be proven false. All cases must be true to be proven true.</p>
+                <p><strong>Existential Statements (∃):</strong> Require one example to be proven true. All cases must be false to be proven false.</p>
+                <p><strong>"No" Statements:</strong> Equivalent to universal statements (¬∃x ≡ ∀x,¬). One counterexample proves them false.</p>
+                <div class="formula">
+                    <strong>Counterexample Logic:</strong><br>
+                    To disprove "∀x ∈ D, P(x)": Find one element a ∈ D such that ¬P(a)<br>
+                    To prove "∃x ∈ D, P(x)": Find one element a ∈ D such that P(a)<br>
+                    To disprove "No x ∈ D, P(x)": Find one element a ∈ D such that P(a)
+                </div>
+            </div>
+            
+            <div class="module-area">
+                <div class="content-panel">
+                    <h3>Counterexample Challenge</h3>
+                    <div id="counterexampleCanvas"></div>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Statement Type</label>
+                        <select class="control-input" id="statementTypeSelect">
+                            <option value="universal">Universal (∀) - "All are..."</option>
+                            <option value="existential">Existential (∃) - "Some are..."</option>
+                            <option value="no">No Statement - "No are..."</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Domain</label>
+                        <select class="control-input" id="counterexampleDomainSelect">
+                            <option value="ℕ">ℕ (Natural Numbers)</option>
+                            <option value="ℤ">ℤ (Integers)</option>
+                            <option value="ℚ">ℚ (Rationals)</option>
+                            <option value="ℝ">ℝ (Reals)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Statement</label>
+                        <input type="text" class="control-input" id="counterexampleStatementInput" placeholder="Enter statement (e.g., 'x is even')">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Test Value</label>
+                        <input type="text" class="control-input" id="testValueInput" placeholder="Enter test value (e.g., 3)">
+                    </div>
+                    
+                    <button class="control-button" id="validateCounterexampleBtn">Validate Counterexample</button>
+                    <button class="control-button secondary" id="generateChallengeBtn">Generate Random Challenge</button>
+                    <button class="control-button stop" id="resetCounterexampleBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Validation Result</div>
+                        <div id="validationResult" class="counterexample-result neutral">
+                            Enter a statement and test value to begin
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conditionals & Equivalence Module -->
+        <div class="module-content" id="conditionals-content">
+            <div class="module-description">
+                <h3>Conditionals & Equivalence</h3>
+                <p>Master conditional statements (p → q), biconditionals (p ↔ q), and logical equivalence through truth tables and transformations.</p>
+                <p><strong>Conditional (p → q):</strong> False only when p is true and q is false. Equivalent to ¬p ∨ q.</p>
+                <p><strong>Biconditional (p ↔ q):</strong> True when both p and q have the same truth value.</p>
+                <p><strong>Logical Equivalence:</strong> Two statements are equivalent if they have identical truth values in all cases.</p>
+                <div class="formula">
+                    <strong>Key Equivalences:</strong><br>
+                    p → q ≡ ¬p ∨ q (Conditional as disjunction)<br>
+                    p → q ≡ ¬q → ¬p (Contrapositive)<br>
+                    ¬(p → q) ≡ p ∧ ¬q (Negation of conditional)<br>
+                    p ↔ q ≡ (p → q) ∧ (q → p) (Biconditional as conjunction)
+                </div>
+            </div>
+            
+            <div class="module-area">
+                <div class="content-panel">
+                    <h3>Conditional Analysis</h3>
+                    <div id="conditionalCanvas"></div>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Statement Type</label>
+                        <select class="control-input" id="conditionalTypeSelect">
+                            <option value="conditional">Conditional (p → q)</option>
+                            <option value="biconditional">Biconditional (p ↔ q)</option>
+                            <option value="equivalence">Equivalence Check</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" id="firstStatementGroup">
+                        <label class="control-label">First Statement</label>
+                        <input type="text" class="control-input" id="firstStatementInput" placeholder="Enter first statement">
+                    </div>
+                    
+                    <div class="control-group" id="secondStatementGroup">
+                        <label class="control-label">Second Statement</label>
+                        <input type="text" class="control-input" id="secondStatementInput" placeholder="Enter second statement">
+                    </div>
+                    
+                    <button class="control-button" id="analyzeConditionalBtn">Analyze Statement</button>
+                    <button class="control-button" id="generateTruthTableBtn">Generate Truth Table</button>
+                    <button class="control-button secondary" id="checkEquivalenceBtn">Check Equivalence</button>
+                    <button class="control-button stop" id="resetConditionalBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Analysis Results</div>
+                        <div class="info-item"><span>Type:</span><span id="statementTypeResult">-</span></div>
+                        <div class="info-item"><span>Form:</span><span id="statementFormResult">-</span></div>
+                        <div class="info-item"><span>Equivalent:</span><span id="equivalenceResult">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Laws of Reasoning Module -->
+        <div class="module-content" id="laws-content">
+            <div class="module-description">
+                <h3>Laws of Reasoning</h3>
+                <p>Apply fundamental laws of logic including Law of Detachment, Simplification, Addition, Disjunctive Syllogism, and Law of Syllogism.</p>
+                <p><strong>Law of Detachment:</strong> From p → q and p, conclude q. Requires both the conditional and its antecedent.</p>
+                <p><strong>Simplification:</strong> From p ∧ q, conclude p (or q).</p>
+                <p><strong>Addition:</strong> From p, conclude p ∨ q.</p>
+                <p><strong>Disjunctive Syllogism:</strong> From p ∨ q and ¬p, conclude q.</p>
+                <p><strong>Law of Syllogism:</strong> From p → q and q → r, conclude p → r.</p>
+                <div class="formula">
+                    <strong>Law Preconditions & Conclusions:</strong><br>
+                    Detachment: p → q, p ⊢ q<br>
+                    Simplification: p ∧ q ⊢ p<br>
+                    Addition: p ⊢ p ∨ q<br>
+                    Disjunctive Syllogism: p ∨ q, ¬p ⊢ q<br>
+                    Syllogism: p → q, q → r ⊢ p → r
+                </div>
+            </div>
+            
+            <div class="module-area">
+                <div class="content-panel">
+                    <h3>Law Selection Challenge</h3>
+                    <div id="lawsCanvas"></div>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Premises</label>
+                        <textarea class="control-input" id="premisesInput" rows="3" placeholder="Enter premises (one per line)"></textarea>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Goal</label>
+                        <input type="text" class="control-input" id="goalInput" placeholder="Enter conclusion to reach">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Select Applicable Law</label>
+                        <div id="lawsSelector">
+                            <div class="law-option" data-law="detachment">Law of Detachment</div>
+                            <div class="law-option" data-law="simplification">Simplification</div>
+                            <div class="law-option" data-law="addition">Addition</div>
+                            <div class="law-option" data-law="disjunctive-syllogism">Disjunctive Syllogism</div>
+                            <div class="law-option" data-law="syllogism">Law of Syllogism</div>
+                            <div class="law-option" data-law="contrapositive">Contrapositive</div>
+                        </div>
+                    </div>
+                    
+                    <button class="control-button" id="applyLawBtn">Apply Selected Law</button>
+                    <button class="control-button secondary" id="validateArgumentBtn">Validate Argument</button>
+                    <button class="control-button stop" id="resetLawsBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Law Application</div>
+                        <div class="info-item"><span>Selected Law:</span><span id="selectedLaw">-</span></div>
+                        <div class="info-item"><span>Valid Application:</span><span id="lawValidity">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statement–Reason Proofs Module -->
+        <div class="module-content" id="proofs-content">
+            <div class="module-description">
+                <h3>Statement–Reason Proofs</h3>
+                <p>Build formal proofs line-by-line with justified reasoning. Each statement must follow logically from previous statements using valid laws.</p>
+                <p><strong>Proof Structure:</strong> Two-column format with Statements (left) and Reasons (right).</p>
+                <p><strong>Reason Requirements:</strong> Each reason must cite prior lines and a valid logical law.</p>
+                <p><strong>Dependency Validation:</strong> Each statement can only reference previous lines in the proof.</p>
+                <div class="formula">
+                    <strong>Proof Validation Rules:</strong><br>
+                    1. Each statement must follow logically from prior statements<br>
+                    2. Each reason must cite valid law and correct line numbers<br>
+                    3. No forward referencing allowed<br>
+                    4. Conclusion must match goal statement
+                </div>
+            </div>
+            
+            <div class="module-area">
+                <div class="content-panel">
+                    <h3>Proof Builder</h3>
+                    <table class="proof-builder" id="proofBuilder">
+                        <thead>
+                            <tr>
+                                <th>Line</th>
+                                <th>Statement</th>
+                                <th>Reason</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proofBody">
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" class="proof-row-input" placeholder="Enter statement"></td>
+                                <td>
+                                    <select class="proof-reason-select">
+                                        <option value="">Select reason</option>
+                                        <option value="given">Given</option>
+                                        <option value="detachment">Law of Detachment</option>
+                                        <option value="simplification">Simplification</option>
+                                        <option value="addition">Addition</option>
+                                        <option value="disjunctive-syllogism">Disjunctive Syllogism</option>
+                                        <option value="syllogism">Law of Syllogism</option>
+                                        <option value="contrapositive">Contrapositive</option>
+                                    </select>
+                                </td>
+                                <td><button class="control-button secondary add-row-btn">+</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div id="proofCanvas"></div>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Goal Statement</label>
+                        <input type="text" class="control-input" id="proofGoalInput" placeholder="Enter statement to prove">
+                    </div>
+                    
+                    <button class="control-button" id="validateProofBtn">Validate Proof</button>
+                    <button class="control-button secondary" id="autoCompleteBtn">Auto-complete Example</button>
+                    <button class="control-button stop" id="resetProofBtn">Reset Proof</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Proof Status</div>
+                        <div class="info-item"><span>Lines:</span><span id="proofLineCount">1</span></div>
+                        <div class="info-item"><span>Status:</span><span id="proofStatus">Incomplete</span></div>
+                        <div class="info-item"><span>Errors:</span><span id="proofErrors">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flashcards Module -->
+        <div class="module-content" id="flashcards-content">
+            <div class="module-description">
+                <h3>Logic Flashcards</h3>
+                <p>Review key logic concepts with spaced repetition flashcards. Click on a card to reveal the answer.</p>
+                <p><strong>Study Tips:</strong></p>
+                <p>1. Review cards regularly for better retention</p>
+                <p>2. Focus extra time on cards you get wrong</p>
+                <p>3. Try to explain concepts in your own words</p>
+            </div>
+            
+            <div class="module-area">
+                <div class="content-panel">
+                    <h3>Logic Concepts Review</h3>
+                    <div id="flashcardsContainer"></div>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Filter by Category</label>
+                        <select class="control-input" id="categoryFilterSelect">
+                            <option value="all">All Categories</option>
+                            <option value="foundational">Foundational Vocabulary & Symbols</option>
+                            <option value="ldi">Law of Disjunctive Inference</option>
+                            <option value="conditionals">Conditional Statements</option>
+                            <option value="detachment">Law of Detachment</option>
+                            <option value="contrapositive">Law of Contrapositive</option>
+                            <option value="demorgan">De Morgan's Laws</option>
+                            <option value="quantifiers">Quantifiers</option>
+                            <option value="negation-quantifiers">Negation of Quantified Statements</option>
+                            <option value="proofs">Proof Structures</option>
+                            <option value="metalogic">Meta-Logic Terms</option>
+                        </select>
+                    </div>
+                    
+                    <button class="control-button" id="shuffleCardsBtn">Shuffle Cards</button>
+                    <button class="control-button secondary" id="showAllBtn">Show All Cards</button>
+                    <button class="control-button stop" id="resetFlashcardsBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Study Progress</div>
+                        <div class="info-item"><span>Total Cards:</span><span id="totalCards">0</span></div>
+                        <div class="info-item"><span>Reviewed:</span><span id="reviewedCards">0</span></div>
+                        <div class="info-item"><span>Mastered:</span><span id="masteredCards">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="strict-logic.js"></script>
+    <script src="logic.js"></script>
+</body>
+</html>

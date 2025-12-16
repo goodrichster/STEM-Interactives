@@ -1,0 +1,768 @@
+/**
+ * Logic Explorer for Propositional Logic
+ * Interactive educational tool covering propositional logic, truth tables, and logical equivalence
+ * Following modern JavaScript practices with exact mathematical representations
+ */
+
+class LogicExplorer {
+    constructor() {
+        this.canvas = null;
+        this.ctx = null;
+        this.currentSimulation = 'propositions';
+        
+        // Canvas references for each simulation
+        this.canvases = {
+            propositions: null,
+            truthTables: null,
+            equivalence: null
+        };
+        
+        this.contexts = {
+            propositions: null,
+            truthTables: null,
+            equivalence: null
+        };
+        
+        // Simulation states
+        this.propositions = {
+            p: true,
+            q: true,
+            operation: 'negation-p'
+        };
+        
+        this.truthTables = {
+            expressionType: 'basic',
+            specificExpression: 'p-and-q',
+            tableData: []
+        };
+        
+        this.equivalence = {
+            firstExpression: 'p-and-q',
+            secondExpression: 'q-and-p',
+            equivalenceType: 'commutative',
+            isEquivalent: false
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        // Initialize all canvases and contexts
+        this.initializeCanvases();
+        
+        // Set initial canvas to propositions
+        this.switchCanvas('propositions');
+        
+        this.setupEventListeners();
+        this.setupTabSwitching();
+        
+        // Draw the initial simulation
+        this.drawCurrentSimulation();
+    }
+    
+    initializeCanvases() {
+        // Get all canvas elements and their contexts
+        const canvasIds = ['propositionsCanvas', 'truthTablesCanvas', 'equivalenceCanvas'];
+        const simulations = ['propositions', 'truthTables', 'equivalence'];
+        
+        canvasIds.forEach((canvasId, index) => {
+            const canvas = document.getElementById(canvasId);
+            const simulation = simulations[index];
+            if (canvas) {
+                this.canvases[simulation] = canvas;
+                this.contexts[simulation] = canvas.getContext('2d');
+            }
+        });
+    }
+    
+    switchCanvas(simulationName) {
+        this.currentSimulation = simulationName;
+        this.drawCurrentSimulation();
+    }
+    
+    drawCurrentSimulation() {
+        const ctx = this.contexts[this.currentSimulation];
+        const canvas = this.canvases[this.currentSimulation];
+        
+        if (!ctx || !canvas) return;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw based on current simulation
+        switch (this.currentSimulation) {
+            case 'propositions':
+                this.drawPropositions(ctx, canvas);
+                break;
+            case 'truthTables':
+                this.drawTruthTables(ctx, canvas);
+                break;
+            case 'equivalence':
+                this.drawEquivalence(ctx, canvas);
+                break;
+        }
+    }
+    
+    drawPropositions(ctx, canvas) {
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Draw title
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Propositional Logic Evaluation', width/2, 40);
+        
+        // Draw propositions
+        ctx.font = '18px Arial';
+        ctx.fillText(`P = ${this.propositions.p ? 'True' : 'False'}`, width/2, 80);
+        ctx.fillText(`Q = ${this.propositions.q ? 'True' : 'False'}`, width/2, 110);
+        
+        // Draw operation
+        const operationText = this.getOperationText(this.propositions.operation);
+        ctx.fillText(`Operation: ${operationText}`, width/2, 150);
+        
+        // Draw result
+        const result = this.evaluateProposition(this.propositions.p, this.propositions.q, this.propositions.operation);
+        ctx.fillStyle = '#667eea';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText(`Result: ${result ? 'True' : 'False'}`, width/2, 190);
+        
+        // Draw visual representation
+        this.drawPropositionDiagram(ctx, width, height, this.propositions.p, this.propositions.q, this.propositions.operation, result);
+        
+        // Draw explanation
+        ctx.fillStyle = '#666';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'left';
+        const explanation = this.getOperationExplanation(this.propositions.operation);
+        this.wrapText(ctx, explanation, 50, height - 100, width - 100, 20);
+    }
+    
+    drawPropositionDiagram(ctx, width, height, p, q, operation, result) {
+        // Draw Venn diagram style representation
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = 60;
+        
+        ctx.globalAlpha = 0.3;
+        
+        // Draw circle for P
+        ctx.fillStyle = '#4facfe';
+        ctx.beginPath();
+        ctx.arc(centerX - 40, centerY, radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw circle for Q
+        ctx.fillStyle = '#f093fb';
+        ctx.beginPath();
+        ctx.arc(centerX + 40, centerY, radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.globalAlpha = 1.0;
+        
+        // Draw labels
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('P', centerX - 40, centerY - 80);
+        ctx.fillText('Q', centerX + 40, centerY - 80);
+        
+        // Draw truth values inside circles
+        ctx.font = '14px Arial';
+        ctx.fillText(p ? 'T' : 'F', centerX - 40, centerY);
+        ctx.fillText(q ? 'T' : 'F', centerX + 40, centerY);
+        
+        // Draw result
+        ctx.fillStyle = result ? '#28a745' : '#dc3545';
+        ctx.font = 'bold 18px Arial';
+        ctx.fillText(`Result: ${result ? 'True' : 'False'}`, centerX, centerY + 120);
+    }
+    
+    drawTruthTables(ctx, canvas) {
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Draw title
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Truth Tables Generator', width/2, 40);
+        
+        // Draw table
+        this.drawTruthTable(ctx, width, height);
+        
+        // Draw explanation
+        ctx.fillStyle = '#666';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'left';
+        const explanation = "A truth table displays all possible truth values for logical expressions. Each row represents one combination of truth values for the propositions.";
+        this.wrapText(ctx, explanation, 50, height - 80, width - 100, 20);
+    }
+    
+    drawTruthTable(ctx, width, height) {
+        const expression = this.truthTables.specificExpression;
+        const tableData = this.generateTruthTable(expression);
+        
+        const cellWidth = 80;
+        const cellHeight = 30;
+        const startX = (width - (tableData.headers.length * cellWidth)) / 2;
+        const startY = 80;
+        
+        // Draw headers
+        ctx.fillStyle = '#667eea';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        for (let i = 0; i < tableData.headers.length; i++) {
+            ctx.fillText(tableData.headers[i], startX + (i * cellWidth) + (cellWidth/2), startY + 20);
+        }
+        
+        // Draw rows
+        ctx.fillStyle = '#333';
+        ctx.font = '14px Arial';
+        for (let row = 0; row < tableData.rows.length; row++) {
+            for (let col = 0; col < tableData.rows[row].length; col++) {
+                const value = tableData.rows[row][col] ? 'T' : 'F';
+                ctx.fillText(value, startX + (col * cellWidth) + (cellWidth/2), startY + 50 + (row * cellHeight) + 20);
+            }
+        }
+        
+        // Draw grid lines
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        
+        // Vertical lines
+        for (let i = 0; i <= tableData.headers.length; i++) {
+            ctx.beginPath();
+            ctx.moveTo(startX + (i * cellWidth), startY);
+            ctx.lineTo(startX + (i * cellWidth), startY + 50 + (tableData.rows.length * cellHeight));
+            ctx.stroke();
+        }
+        
+        // Horizontal lines
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(startX + (tableData.headers.length * cellWidth), startY);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(startX, startY + 50);
+        ctx.lineTo(startX + (tableData.headers.length * cellWidth), startY + 50);
+        ctx.stroke();
+        
+        for (let i = 0; i <= tableData.rows.length; i++) {
+            ctx.beginPath();
+            ctx.moveTo(startX, startY + 50 + (i * cellHeight));
+            ctx.lineTo(startX + (tableData.headers.length * cellWidth), startY + 50 + (i * cellHeight));
+            ctx.stroke();
+        }
+    }
+    
+    drawEquivalence(ctx, canvas) {
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Draw title
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Logical Equivalence Checker', width/2, 40);
+        
+        // Draw expressions
+        const expr1 = this.getExpressionText(this.equivalence.firstExpression);
+        const expr2 = this.getExpressionText(this.equivalence.secondExpression);
+        
+        ctx.font = '18px Arial';
+        ctx.fillText(`Expression 1: ${expr1}`, width/2, 80);
+        ctx.fillText(`Expression 2: ${expr2}`, width/2, 110);
+        
+        // Check equivalence
+        const isEquivalent = this.checkEquivalence(this.equivalence.firstExpression, this.equivalence.secondExpression);
+        this.equivalence.isEquivalent = isEquivalent;
+        
+        // Draw result
+        ctx.fillStyle = isEquivalent ? '#28a745' : '#dc3545';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText(`Equivalent: ${isEquivalent ? 'Yes' : 'No'}`, width/2, 150);
+        
+        // Draw law name
+        const lawName = this.getLawName(this.equivalence.equivalenceType);
+        ctx.fillStyle = '#666';
+        ctx.font = '16px Arial';
+        ctx.fillText(`Law: ${lawName}`, width/2, 180);
+        
+        // Draw truth tables side by side
+        this.drawSideBySideTruthTables(ctx, width, height, this.equivalence.firstExpression, this.equivalence.secondExpression);
+        
+        // Draw explanation
+        ctx.fillStyle = '#666';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'left';
+        const explanation = "Two expressions are logically equivalent if they have identical truth values for all possible combinations of their component propositions.";
+        this.wrapText(ctx, explanation, 50, height - 80, width - 100, 20);
+    }
+    
+    drawSideBySideTruthTables(ctx, width, height, expr1, expr2) {
+        const table1 = this.generateTruthTable(expr1);
+        const table2 = this.generateTruthTable(expr2);
+        
+        const cellWidth = 60;
+        const cellHeight = 25;
+        const startY = 220;
+        
+        // Draw first table
+        const startX1 = (width / 2) - 180;
+        this.drawSingleTruthTable(ctx, startX1, startY, cellWidth, cellHeight, table1);
+        
+        // Draw second table
+        const startX2 = (width / 2) + 20;
+        this.drawSingleTruthTable(ctx, startX2, startY, cellWidth, cellHeight, table2);
+        
+        // Draw labels
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Expression 1', startX1 + (table1.headers.length * cellWidth) / 2, startY - 10);
+        ctx.fillText('Expression 2', startX2 + (table2.headers.length * cellWidth) / 2, startY - 10);
+    }
+    
+    drawSingleTruthTable(ctx, startX, startY, cellWidth, cellHeight, tableData) {
+        // Draw headers
+        ctx.fillStyle = '#667eea';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        for (let i = 0; i < tableData.headers.length; i++) {
+            ctx.fillText(tableData.headers[i], startX + (i * cellWidth) + (cellWidth/2), startY + 15);
+        }
+        
+        // Draw rows
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        for (let row = 0; row < tableData.rows.length; row++) {
+            for (let col = 0; col < tableData.rows[row].length; col++) {
+                const value = tableData.rows[row][col] ? 'T' : 'F';
+                ctx.fillText(value, startX + (col * cellWidth) + (cellWidth/2), startY + 35 + (row * cellHeight) + 15);
+            }
+        }
+        
+        // Draw grid lines
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        
+        // Vertical lines
+        for (let i = 0; i <= tableData.headers.length; i++) {
+            ctx.beginPath();
+            ctx.moveTo(startX + (i * cellWidth), startY);
+            ctx.lineTo(startX + (i * cellWidth), startY + 35 + (tableData.rows.length * cellHeight));
+            ctx.stroke();
+        }
+        
+        // Horizontal lines
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(startX + (tableData.headers.length * cellWidth), startY);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(startX, startY + 35);
+        ctx.lineTo(startX + (tableData.headers.length * cellWidth), startY + 35);
+        ctx.stroke();
+        
+        for (let i = 0; i <= tableData.rows.length; i++) {
+            ctx.beginPath();
+            ctx.moveTo(startX, startY + 35 + (i * cellHeight));
+            ctx.lineTo(startX + (tableData.headers.length * cellWidth), startY + 35 + (i * cellHeight));
+            ctx.stroke();
+        }
+    }
+    
+    setupEventListeners() {
+        // Proposition controls
+        const propositionPSlider = document.getElementById('propositionPSlider');
+        const propositionQSlider = document.getElementById('propositionQSlider');
+        const logicalOperationSelect = document.getElementById('logicalOperationSelect');
+        const evaluateBtn = document.getElementById('evaluateBtn');
+        const resetPropositionsBtn = document.getElementById('resetPropositionsBtn');
+        
+        if (propositionPSlider) {
+            propositionPSlider.addEventListener('change', (e) => {
+                this.propositions.p = e.target.value === 'true';
+                this.updatePropositionResults();
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (propositionQSlider) {
+            propositionQSlider.addEventListener('change', (e) => {
+                this.propositions.q = e.target.value === 'true';
+                this.updatePropositionResults();
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (logicalOperationSelect) {
+            logicalOperationSelect.addEventListener('change', (e) => {
+                this.propositions.operation = e.target.value;
+                this.updatePropositionResults();
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (evaluateBtn) {
+            evaluateBtn.addEventListener('click', () => {
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (resetPropositionsBtn) {
+            resetPropositionsBtn.addEventListener('click', () => {
+                if (propositionPSlider) propositionPSlider.value = 'true';
+                if (propositionQSlider) propositionQSlider.value = 'true';
+                if (logicalOperationSelect) logicalOperationSelect.value = 'negation-p';
+                
+                this.propositions.p = true;
+                this.propositions.q = true;
+                this.propositions.operation = 'negation-p';
+                
+                this.updatePropositionResults();
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        // Truth table controls
+        const expressionTypeSelect = document.getElementById('expressionTypeSelect');
+        const specificExpressionSelect = document.getElementById('specificExpressionSelect');
+        const generateTableBtn = document.getElementById('generateTableBtn');
+        const clearTableBtn = document.getElementById('clearTableBtn');
+        
+        if (expressionTypeSelect) {
+            expressionTypeSelect.addEventListener('change', (e) => {
+                this.truthTables.expressionType = e.target.value;
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (specificExpressionSelect) {
+            specificExpressionSelect.addEventListener('change', (e) => {
+                this.truthTables.specificExpression = e.target.value;
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (generateTableBtn) {
+            generateTableBtn.addEventListener('click', () => {
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (clearTableBtn) {
+            clearTableBtn.addEventListener('click', () => {
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        // Equivalence controls
+        const firstExpressionSelect = document.getElementById('firstExpressionSelect');
+        const secondExpressionSelect = document.getElementById('secondExpressionSelect');
+        const equivalenceTypeSelect = document.getElementById('equivalenceTypeSelect');
+        const checkEquivalenceBtn = document.getElementById('checkEquivalenceBtn');
+        const resetEquivalenceBtn = document.getElementById('resetEquivalenceBtn');
+        
+        if (firstExpressionSelect) {
+            firstExpressionSelect.addEventListener('change', (e) => {
+                this.equivalence.firstExpression = e.target.value;
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (secondExpressionSelect) {
+            secondExpressionSelect.addEventListener('change', (e) => {
+                this.equivalence.secondExpression = e.target.value;
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (equivalenceTypeSelect) {
+            equivalenceTypeSelect.addEventListener('change', (e) => {
+                this.equivalence.equivalenceType = e.target.value;
+                this.updateEquivalenceExpressions();
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (checkEquivalenceBtn) {
+            checkEquivalenceBtn.addEventListener('click', () => {
+                this.drawCurrentSimulation();
+            });
+        }
+        
+        if (resetEquivalenceBtn) {
+            resetEquivalenceBtn.addEventListener('click', () => {
+                if (firstExpressionSelect) firstExpressionSelect.value = 'p-and-q';
+                if (secondExpressionSelect) secondExpressionSelect.value = 'q-and-p';
+                if (equivalenceTypeSelect) equivalenceTypeSelect.value = 'commutative';
+                
+                this.equivalence.firstExpression = 'p-and-q';
+                this.equivalence.secondExpression = 'q-and-p';
+                this.equivalence.equivalenceType = 'commutative';
+                
+                this.drawCurrentSimulation();
+            });
+        }
+    }
+    
+    setupTabSwitching() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const contentDivs = document.querySelectorAll('.simulation-content');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and content divs
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                contentDivs.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Show corresponding content
+                const tabName = button.getAttribute('data-tab');
+                const contentId = `${tabName}-content`;
+                const contentDiv = document.getElementById(contentId);
+                if (contentDiv) {
+                    contentDiv.classList.add('active');
+                    this.switchCanvas(tabName === 'truth-tables' ? 'truthTables' : 
+                                    tabName === 'logical-equivalence' ? 'equivalence' : tabName);
+                }
+            });
+        });
+    }
+    
+    evaluateProposition(p, q, operation) {
+        switch (operation) {
+            case 'negation-p':
+                return !p;
+            case 'negation-q':
+                return !q;
+            case 'conjunction':
+                return p && q;
+            case 'disjunction':
+                return p || q;
+            case 'implication':
+                return !p || q;
+            case 'biconditional':
+                return p === q;
+            default:
+                return false;
+        }
+    }
+    
+    generateTruthTable(expression) {
+        const headers = [];
+        const rows = [];
+        
+        switch (expression) {
+            case 'p-and-q':
+                headers.push('P', 'Q', 'P ∧ Q');
+                rows.push([false, false, false]);
+                rows.push([false, true, false]);
+                rows.push([true, false, false]);
+                rows.push([true, true, true]);
+                break;
+            case 'p-or-q':
+                headers.push('P', 'Q', 'P ∨ Q');
+                rows.push([false, false, false]);
+                rows.push([false, true, true]);
+                rows.push([true, false, true]);
+                rows.push([true, true, true]);
+                break;
+            case 'not-p':
+                headers.push('P', '¬P');
+                rows.push([false, true]);
+                rows.push([true, false]);
+                break;
+            case 'p-implies-q':
+                headers.push('P', 'Q', 'P → Q');
+                rows.push([false, false, true]);
+                rows.push([false, true, true]);
+                rows.push([true, false, false]);
+                rows.push([true, true, true]);
+                break;
+            case 'p-bicond-q':
+                headers.push('P', 'Q', 'P ↔ Q');
+                rows.push([false, false, true]);
+                rows.push([false, true, false]);
+                rows.push([true, false, false]);
+                rows.push([true, true, true]);
+                break;
+            case 'de-morgan-1':
+                headers.push('P', 'Q', '¬(P ∧ Q)', '¬P ∨ ¬Q');
+                rows.push([false, false, true, true]);
+                rows.push([false, true, true, true]);
+                rows.push([true, false, true, true]);
+                rows.push([true, true, false, false]);
+                break;
+            case 'de-morgan-2':
+                headers.push('P', 'Q', '¬(P ∨ Q)', '¬P ∧ ¬Q');
+                rows.push([false, false, true, true]);
+                rows.push([false, true, false, false]);
+                rows.push([true, false, false, false]);
+                rows.push([true, true, false, false]);
+                break;
+            default:
+                headers.push('P', 'Q', 'Result');
+                rows.push([false, false, false]);
+                rows.push([false, true, false]);
+                rows.push([true, false, false]);
+                rows.push([true, true, true]);
+        }
+        
+        return { headers, rows };
+    }
+    
+    checkEquivalence(expr1, expr2) {
+        const table1 = this.generateTruthTable(expr1);
+        const table2 = this.generateTruthTable(expr2);
+        
+        // Compare the result columns (last column of each table)
+        const resultCol1 = table1.rows.map(row => row[row.length - 1]);
+        const resultCol2 = table2.rows.map(row => row[row.length - 1]);
+        
+        // Check if all values are identical
+        for (let i = 0; i < resultCol1.length; i++) {
+            if (resultCol1[i] !== resultCol2[i]) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    updatePropositionResults() {
+        // Update the result display in the UI
+        const resultP = document.getElementById('resultP');
+        const resultQ = document.getElementById('resultQ');
+        const operationResult = document.getElementById('operationResult');
+        const finalResult = document.getElementById('finalResult');
+        
+        if (resultP) resultP.textContent = this.propositions.p ? 'True' : 'False';
+        if (resultQ) resultQ.textContent = this.propositions.q ? 'True' : 'False';
+        if (operationResult) operationResult.textContent = this.getOperationText(this.propositions.operation);
+        
+        const result = this.evaluateProposition(this.propositions.p, this.propositions.q, this.propositions.operation);
+        if (finalResult) finalResult.textContent = result ? 'True' : 'False';
+    }
+    
+    updateEquivalenceExpressions() {
+        const firstExpressionSelect = document.getElementById('firstExpressionSelect');
+        const secondExpressionSelect = document.getElementById('secondExpressionSelect');
+        
+        if (!firstExpressionSelect || !secondExpressionSelect) return;
+        
+        switch (this.equivalence.equivalenceType) {
+            case 'commutative':
+                firstExpressionSelect.value = 'p-and-q';
+                secondExpressionSelect.value = 'q-and-p';
+                this.equivalence.firstExpression = 'p-and-q';
+                this.equivalence.secondExpression = 'q-and-p';
+                break;
+            case 'demorgan':
+                firstExpressionSelect.value = 'de-morgan-1';
+                secondExpressionSelect.value = 'de-morgan-2';
+                this.equivalence.firstExpression = 'de-morgan-1';
+                this.equivalence.secondExpression = 'de-morgan-2';
+                break;
+            case 'implication':
+                firstExpressionSelect.value = 'p-implies-q';
+                secondExpressionSelect.value = 'not-q-implies-not-p';
+                this.equivalence.firstExpression = 'p-implies-q';
+                this.equivalence.secondExpression = 'not-q-implies-not-p';
+                break;
+        }
+    }
+    
+    getOperationText(operation) {
+        switch (operation) {
+            case 'negation-p': return '¬P (Negation of P)';
+            case 'negation-q': return '¬Q (Negation of Q)';
+            case 'conjunction': return 'P ∧ Q (Conjunction)';
+            case 'disjunction': return 'P ∨ Q (Disjunction)';
+            case 'implication': return 'P → Q (Implication)';
+            case 'biconditional': return 'P ↔ Q (Biconditional)';
+            default: return operation;
+        }
+    }
+    
+    getOperationExplanation(operation) {
+        switch (operation) {
+            case 'negation-p': 
+                return "Negation reverses the truth value of a proposition. If P is true, then ¬P is false, and vice versa.";
+            case 'negation-q': 
+                return "Negation reverses the truth value of a proposition. If Q is true, then ¬Q is false, and vice versa.";
+            case 'conjunction': 
+                return "Conjunction (AND) is true only when both propositions are true. Otherwise, it is false.";
+            case 'disjunction': 
+                return "Disjunction (OR) is false only when both propositions are false. Otherwise, it is true.";
+            case 'implication': 
+                return "Implication (IF-THEN) is false only when the antecedent (P) is true and the consequent (Q) is false.";
+            case 'biconditional': 
+                return "Biconditional (IF AND ONLY IF) is true when both propositions have the same truth value.";
+            default: return "Logical operation explanation.";
+        }
+    }
+    
+    getExpressionText(expression) {
+        switch (expression) {
+            case 'p-and-q': return 'P ∧ Q';
+            case 'p-or-q': return 'P ∨ Q';
+            case 'not-p': return '¬P';
+            case 'p-implies-q': return 'P → Q';
+            case 'p-bicond-q': return 'P ↔ Q';
+            case 'de-morgan-1': return '¬(P ∧ Q)';
+            case 'de-morgan-2': return '¬(P ∨ Q)';
+            case 'q-and-p': return 'Q ∧ P';
+            case 'q-or-p': return 'Q ∨ P';
+            case 'not-q': return '¬Q';
+            case 'not-p-or-not-q': return '¬P ∨ ¬Q';
+            case 'not-p-and-not-q': return '¬P ∧ ¬Q';
+            case 'not-q-implies-not-p': return '¬Q → ¬P';
+            default: return expression;
+        }
+    }
+    
+    getLawName(lawType) {
+        switch (lawType) {
+            case 'commutative': return 'Commutative Law';
+            case 'demorgan': return "De Morgan's Law";
+            case 'implication': return 'Implication Equivalence';
+            case 'custom': return 'Custom Comparison';
+            default: return lawType;
+        }
+    }
+    
+    wrapText(context, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+        let currentY = y;
+        
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = context.measureText(testLine);
+            const testWidth = metrics.width;
+            
+            if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, currentY);
+                line = words[n] + ' ';
+                currentY += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        
+        context.fillText(line, x, currentY);
+    }
+}
+
+// Initialize the application when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const logicExplorer = new LogicExplorer();
+});

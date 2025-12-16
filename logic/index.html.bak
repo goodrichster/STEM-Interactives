@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Explorer - Graham's Mathematical Applications</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .simulation-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+
+        .tab-button.active:hover {
+            background: #5a6fd8;
+        }
+
+        .simulation-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .simulation-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .simulation-area {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .canvas-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .logic-canvas {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: white;
+            width: 100%;
+            height: 500px;
+            display: block;
+        }
+
+        .controls-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .control-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .control-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .control-button.stop {
+            background: #dc3545;
+        }
+
+        .control-button.stop:hover {
+            background: #c82333;
+        }
+
+        .info-panel {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c5aa0;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .logic-description {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logic-description h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .logic-description p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .formula {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+        }
+
+        .truth-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .truth-table th,
+        .truth-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .truth-table th {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .truth-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        @media (max-width: 768px) {
+            .simulation-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .simulation-tabs {
+                justify-content: center;
+            }
+            
+            .tab-button {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="../index.html" class="back-link">← Back to Main Menu</a>
+            <h1>Logic Explorer</h1>
+            <p class="subtitle">Interactive Logic Concepts and Truth Tables</p>
+        </div>
+
+        <div class="simulation-tabs">
+            <button class="tab-button active" data-tab="propositions">Propositional Logic</button>
+            <button class="tab-button" data-tab="truth-tables">Truth Tables</button>
+            <button class="tab-button" data-tab="logical-equivalence">Logical Equivalence</button>
+        </div>
+
+        <!-- Propositional Logic Simulation -->
+        <div class="simulation-content active" id="propositions-content">
+            <div class="logic-description">
+                <h3>Propositional Logic</h3>
+                <p>Explore the fundamentals of propositional logic, the foundation of mathematical reasoning and computer science. Propositional logic deals with statements that can be either true or false, connected by logical operators.</p>
+                <p><strong>Key Concepts:</strong> A proposition is a declarative statement that is either true (T) or false (F). Logical connectives combine propositions to form more complex statements.</p>
+                <p><strong>Logical Connectives:</strong></p>
+                <p><strong>Negation (¬):</strong> "Not" - reverses the truth value of a proposition.</p>
+                <p><strong>Conjunction (∧):</strong> "And" - true only when both propositions are true.</p>
+                <p><strong>Disjunction (∨):</strong> "Or" - true when at least one proposition is true.</p>
+                <p><strong>Implication (→):</strong> "If...then..." - false only when the antecedent is true and the consequent is false.</p>
+                <p><strong>Biconditional (↔):</strong> "If and only if" - true when both propositions have the same truth value.</p>
+                <div class="formula">
+                    <strong>Logical Operator Definitions:</strong><br>
+                    ¬P (Negation): True when P is false<br>
+                    P ∧ Q (Conjunction): True only when both P and Q are true<br>
+                    P ∨ Q (Disjunction): False only when both P and Q are false<br>
+                    P → Q (Implication): False only when P is true and Q is false<br>
+                    P ↔ Q (Biconditional): True when P and Q have the same truth value
+                </div>
+            </div>
+            
+            <div class="simulation-area">
+                <div class="canvas-container">
+                    <canvas id="propositionsCanvas" class="logic-canvas" width="600" height="500"></canvas>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Proposition P</label>
+                        <select class="control-input" id="propositionPSlider">
+                            <option value="true">True (T)</option>
+                            <option value="false">False (F)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Proposition Q</label>
+                        <select class="control-input" id="propositionQSlider">
+                            <option value="true">True (T)</option>
+                            <option value="false">False (F)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Logical Operation</label>
+                        <select class="control-input" id="logicalOperationSelect">
+                            <option value="negation-p">Negation (¬P)</option>
+                            <option value="negation-q">Negation (¬Q)</option>
+                            <option value="conjunction">Conjunction (P ∧ Q)</option>
+                            <option value="disjunction">Disjunction (P ∨ Q)</option>
+                            <option value="implication">Implication (P → Q)</option>
+                            <option value="biconditional">Biconditional (P ↔ Q)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="control-button" id="evaluateBtn">Evaluate Expression</button>
+                    <button class="control-button stop" id="resetPropositionsBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Evaluation Results</div>
+                        <div class="info-item"><span>Proposition P:</span><span id="resultP">-</span></div>
+                        <div class="info-item"><span>Proposition Q:</span><span id="resultQ">-</span></div>
+                        <div class="info-item"><span>Operation:</span><span id="operationResult">-</span></div>
+                        <div class="info-item"><span>Result:</span><span id="finalResult">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Truth Tables Simulation -->
+        <div class="simulation-content" id="truth-tables-content">
+            <div class="logic-description">
+                <h3>Truth Tables</h3>
+                <p>Truth tables systematically display all possible truth values for logical expressions. They are essential tools for analyzing logical statements and proving validity of arguments.</p>
+                <p><strong>Constructing Truth Tables:</strong> For n propositions, there are 2ⁿ possible combinations of truth values. Each row represents one combination, and columns show intermediate and final results.</p>
+                <p><strong>Reading Truth Tables:</strong> Start with the leftmost columns representing the basic propositions. Work through each logical operation column by column until reaching the final result.</p>
+                <p><strong>Applications:</strong> Truth tables are used in digital circuit design, computer programming, mathematical proofs, and philosophical argument analysis.</p>
+                <div class="formula">
+                    <strong>Truth Table Construction:</strong><br>
+                    1. List all possible truth value combinations<br>
+                    2. Add columns for intermediate operations<br>
+                    3. Calculate final column values step by step<br>
+                    4. Analyze patterns and properties
+                </div>
+            </div>
+            
+            <div class="simulation-area">
+                <div class="canvas-container">
+                    <canvas id="truthTablesCanvas" class="logic-canvas" width="600" height="500"></canvas>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">Expression Type</label>
+                        <select class="control-input" id="expressionTypeSelect">
+                            <option value="basic">Basic Operations</option>
+                            <option value="compound">Compound Expressions</option>
+                            <option value="conditional">Conditional Statements</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Specific Expression</label>
+                        <select class="control-input" id="specificExpressionSelect">
+                            <option value="p-and-q">P ∧ Q (Conjunction)</option>
+                            <option value="p-or-q">P ∨ Q (Disjunction)</option>
+                            <option value="not-p">¬P (Negation)</option>
+                            <option value="p-implies-q">P → Q (Implication)</option>
+                            <option value="p-bicond-q">P ↔ Q (Biconditional)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="control-button" id="generateTableBtn">Generate Truth Table</button>
+                    <button class="control-button stop" id="clearTableBtn">Clear</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Table Information</div>
+                        <div class="info-item"><span>Propositions:</span><span id="tablePropositions">2</span></div>
+                        <div class="info-item"><span>Rows:</span><span id="tableRows">4</span></div>
+                        <div class="info-item"><span>Columns:</span><span id="tableColumns">3</span></div>
+                        <div class="info-item"><span>Type:</span><span id="tableType">Basic</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logical Equivalence Simulation -->
+        <div class="simulation-content" id="logical-equivalence-content">
+            <div class="logic-description">
+                <h3>Logical Equivalence</h3>
+                <p>Two logical expressions are equivalent if they have identical truth values for all possible combinations of their component propositions. Logical equivalence is crucial for simplifying expressions and proving mathematical theorems.</p>
+                <p><strong>Fundamental Equivalences:</strong></p>
+                <p><strong>Commutative Laws:</strong> P ∧ Q ≡ Q ∧ P and P ∨ Q ≡ Q ∨ P</p>
+                <p><strong>Associative Laws:</strong> (P ∧ Q) ∧ R ≡ P ∧ (Q ∧ R) and (P ∨ Q) ∨ R ≡ P ∨ (Q ∨ R)</p>
+                <p><strong>Distributive Laws:</strong> P ∧ (Q ∨ R) ≡ (P ∧ Q) ∨ (P ∧ R) and P ∨ (Q ∧ R) ≡ (P ∨ Q) ∧ (P ∨ R)</p>
+                <p><strong>De Morgan's Laws:</strong> ¬(P ∧ Q) ≡ ¬P ∨ ¬Q and ¬(P ∨ Q) ≡ ¬P ∧ ¬Q</p>
+                <p><strong>Double Negation:</strong> ¬(¬P) ≡ P</p>
+                <div class="formula">
+                    <strong>Proving Equivalence:</strong><br>
+                    Method 1: Construct truth tables for both expressions<br>
+                    Method 2: Use known equivalences to transform one into the other<br>
+                    Method 3: Show that the biconditional is a tautology
+                </div>
+            </div>
+            
+            <div class="simulation-area">
+                <div class="canvas-container">
+                    <canvas id="equivalenceCanvas" class="logic-canvas" width="600" height="500"></canvas>
+                </div>
+                
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label class="control-label">First Expression</label>
+                        <select class="control-input" id="firstExpressionSelect">
+                            <option value="p-and-q">P ∧ Q</option>
+                            <option value="p-or-q">P ∨ Q</option>
+                            <option value="not-p">¬P</option>
+                            <option value="p-implies-q">P → Q</option>
+                            <option value="de-morgan-1">¬(P ∧ Q)</option>
+                            <option value="de-morgan-2">¬(P ∨ Q)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Second Expression</label>
+                        <select class="control-input" id="secondExpressionSelect">
+                            <option value="q-and-p">Q ∧ P</option>
+                            <option value="q-or-p">Q ∨ P</option>
+                            <option value="not-q">¬Q</option>
+                            <option value="not-p-or-not-q">¬P ∨ ¬Q</option>
+                            <option value="not-p-and-not-q">¬P ∧ ¬Q</option>
+                            <option value="not-q-implies-not-p">¬Q → ¬P</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Equivalence Type</label>
+                        <select class="control-input" id="equivalenceTypeSelect">
+                            <option value="commutative">Commutative Law</option>
+                            <option value="demorgan">De Morgan's Law</option>
+                            <option value="implication">Implication Equivalence</option>
+                            <option value="custom">Custom Comparison</option>
+                        </select>
+                    </div>
+                    
+                    <button class="control-button" id="checkEquivalenceBtn">Check Equivalence</button>
+                    <button class="control-button stop" id="resetEquivalenceBtn">Reset</button>
+                    
+                    <div class="info-panel">
+                        <div class="info-title">Equivalence Analysis</div>
+                        <div class="info-item"><span>Expression 1:</span><span id="expr1Display">-</span></div>
+                        <div class="info-item"><span>Expression 2:</span><span id="expr2Display">-</span></div>
+                        <div class="info-item"><span>Equivalent:</span><span id="equivalenceResult">-</span></div>
+                        <div class="info-item"><span>Laws Applied:</span><span id="lawsApplied">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="logic.js"></script>
+</body>
+</html>
